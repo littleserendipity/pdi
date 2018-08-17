@@ -1,3 +1,6 @@
 ## Processamento Digital de Imagem
 
-Listas e projeto da cadeira PDI - POLI (2018.2)
+Projeto e listas da cadeira PDI - POLI (2018.2)
+
+### Requisitos
+    1. PIL
