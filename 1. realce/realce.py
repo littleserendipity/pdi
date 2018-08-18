@@ -5,25 +5,25 @@ import time
 import os
 
 def getMinMax(arr):
-    return [min([x for x in arr if x !=0]), max(arr)]
+    # return [min(arr), max(arr)]
+    return [0, 255]
 
 def histogram(arr):
-    h_arr = numpy.zeros((256), dtype=numpy.uint8)
+    h_arr = numpy.zeros(256)
     g_arr = ["" for x in range(256)]
 
     for x in range(len(arr)):
         h_arr[arr[x]] += 1
 
+    max_arr = max(h_arr)
     for x in range(len(h_arr)):
-        g_arr[x] = (str(x) + "\t: " + str("|" * int(h_arr[x] * 0.25)) + "\n")
+        g_arr[x] = (str(x) + "\t: " + str("|" * int((h_arr[x] * 100)/int(max_arr)) + "\n"))
 
-    return [h_arr, g_arr, getMinMax(h_arr)]
+    return [h_arr, g_arr, getMinMax(arr)]
 
 def printHistogramTxt(save_path, g_arr, p_min_max):
-    with open((save_path + ".txt"), "w") as text_file:
-        text_file.write("Histograma da imagem: " + save_path + "\n")
-        text_file.write("Min e Max (min > 0): " + str(p_min_max) + "\n\n")
-
+    with open((save_path.split(".")[0] + "_histogram.txt"), "w") as text_file:
+        text_file.write("Histograma da imagem: " + save_path + "\n\n")
         for x in range(len(g_arr)):
             text_file.write(g_arr[x])
 
@@ -33,7 +33,7 @@ def printHistogramGraph(save_path, h_arr):
     plt.xlabel("Pixel")
     plt.ylabel("Frequência")
     plt.grid(True)
-    plt.savefig(save_path.replace(".", "_histogram."))
+    plt.savefig(save_path.split(".")[0] + "_histogram.jpg")
     plt.clf()
 
 def no_linear(min, max, x, exp):
