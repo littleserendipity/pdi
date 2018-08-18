@@ -28,7 +28,7 @@ def printHistogram(save_path, g_arr, p_min_max):
 
 def no_linear(min, max, x, exp):
     a = 255/(max - min)
-    return int(a * (x ** exp))
+    return int(a*(x **(exp*2)))
 
 def realce(img, exp):
     path = "realce"
@@ -63,13 +63,13 @@ def realce(img, exp):
     im2.save(save_path)
 
 begin = time.time()
-realce("Clarear_(1).jpg", 1.5)
-realce("Clarear_(2).jpg", 1.5)
-realce("Clarear_(3).jpg", 1.5)
+realce("Clarear_(1).jpg", 0.75)
+realce("Clarear_(2).jpg", 0.75)
+realce("Clarear_(3).jpg", 0.75)
 
-realce("Escurecer_(1).jpg", 0.75)
-realce("Escurecer_(2).jpg", 0.75)
-realce("Escurecer_(3).jpg", 0.75)
+realce("Escurecer_(1).jpg", 0.4)
+realce("Escurecer_(2).jpg", 0.4)
+realce("Escurecer_(3).jpg", 0.4)
 end = time.time()
 
 print("Finalizado: " + str(round(end-begin, 2)) + "s\n")
