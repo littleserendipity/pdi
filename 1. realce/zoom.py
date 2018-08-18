@@ -7,15 +7,11 @@ def zoom(img, n_width, n_height):
     path = "zoom"
     save_path = os.path.join(path, "result", img)
 
-    im = Image.open(os.path.join(path, img), "r")
-    rgb_im = im.convert('RGB')
+    im = Image.open(os.path.join(path, img), "r").convert('RGB')
+    arr = numpy.array(im, dtype=numpy.uint8)
+    n_arr = numpy.zeros((n_height, n_width, 3), dtype=numpy.uint8)
 
-    arr = numpy.array(rgb_im, dtype='int64')
-    n_arr = numpy.zeros((n_height, n_width, 3) , dtype=numpy.uint8)
-
-    width = len(arr[0])
-    height = len(arr)
-
+    width, height = im.size
     p_width = int(numpy.ceil(n_width / width))
     p_height = int(numpy.ceil(n_height / height))
 
