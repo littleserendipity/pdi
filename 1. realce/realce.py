@@ -1,4 +1,5 @@
 from PIL import Image
+import matplotlib.pyplot as plt
 import numpy
 import time
 import os
@@ -15,16 +16,25 @@ def histogram(arr):
 
     for x in range(len(h_arr)):
         g_arr[x] = (str(x) + "\t: " + str("|" * int(h_arr[x] * 0.25)) + "\n")
-    
-    return [g_arr, getMinMax(h_arr)]
 
-def printHistogram(save_path, g_arr, p_min_max):
+    return [h_arr, g_arr, getMinMax(h_arr)]
+
+def printHistogramTxt(save_path, g_arr, p_min_max):
     with open((save_path + ".txt"), "w") as text_file:
         text_file.write("Histograma da imagem: " + save_path + "\n")
         text_file.write("Min e Max (min > 0): " + str(p_min_max) + "\n\n")
 
         for x in range(len(g_arr)):
             text_file.write(g_arr[x])
+
+def printHistogramGraph(save_path, h_arr):
+    plt.bar([x for x in range(256)], h_arr)
+    plt.title("Histograma")
+    plt.xlabel("Pixel")
+    plt.ylabel("Frequência")
+    plt.grid(True)
+    plt.savefig(save_path.replace(".", "_histogram."))
+    plt.clf()
 
 def no_linear(min, max, x, exp):
     a = 255/(max - min)
@@ -37,8 +47,9 @@ def realce(img, exp):
     im = Image.open(os.path.join(path, img), "r")
     l_pixel = list(im.getdata())
 
-    g_arr, p_min_max = histogram(l_pixel)
-    printHistogram(save_path, g_arr, getMinMax(l_pixel))
+    h_arr, g_arr, p_min_max = histogram(l_pixel)
+    printHistogramTxt(save_path, g_arr, getMinMax(l_pixel))
+    printHistogramGraph(save_path, h_arr)
 
     save_path = os.path.join(path, "result", img)
 
@@ -54,8 +65,9 @@ def realce(img, exp):
 
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
-    g_arr, p_min_max = histogram(l_pixel)
-    printHistogram(save_path, g_arr, getMinMax(l_pixel))
+    h_arr, g_arr, p_min_max = histogram(l_pixel)
+    printHistogramTxt(save_path, g_arr, getMinMax(l_pixel))
+    printHistogramGraph(save_path, h_arr)
 
     im2 = Image.new(im.mode, im.size)
     im2.putdata(l_pixel)
