@@ -1,46 +1,47 @@
 from PIL import Image
 import numpy
+import time
 import os
 
 def zoom(img, n_width, n_height):
-    path = "./zoom/" + img
-    save_path = path + "result/" + img
+    path = "zoom"
+    save_path = os.path.join(path, "result", img)
 
-    im = Image.open(path, "r")
-    arr = numpy.array(im)
+    im = Image.open(os.path.join(path, img), "r")
+    rgb_im = im.convert('RGB')
+
+    arr = numpy.array(rgb_im, dtype='int64')
+    n_arr = numpy.zeros((n_height, n_width, 3) , dtype=numpy.uint8)
 
     width = len(arr[0])
     height = len(arr)
-    n_arr = numpy.zeros((n_height, n_width) , dtype=numpy.uint8)
 
-    if (n_width > width):
-        f_width = int(numpy.ceil((n_width / width)))
-    else:
-        f_width = 1
+    p_width = int(numpy.ceil(n_width / width))
+    p_height = int(numpy.ceil(n_height / height))
 
-    if (n_height > height):
-        f_height = int(numpy.ceil((n_height / height)))
-    else:
-        f_height = 1
+    for y in range(height):
+        for x in range(width):
+            new_x = int((n_width * x) / width)
+            new_y = int((n_height * y) / height)
 
-    for y in range(len(arr)):
-        new_y = (y * f_height)
-
-        for x in range(len(arr[y])):
-            new_x = (x * f_width)
-
-            for temp_y in range(f_height):
-                for temp_x in range(f_width):
-                    if (new_y + temp_y < n_height) and (new_x + temp_x < n_width):
-                        n_arr[(new_y + temp_y), (new_x + temp_x)] = arr[y, x]
+            for resize_y in range(p_height):
+                for resize_x in range(p_width):
+                    n_arr[new_y+resize_y, new_x+resize_x] = arr[y, x]
 
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    # Image.fromarray(n_arr).show()
     Image.fromarray(n_arr).save(save_path)
 
-# zoom("Zoom_in_(1).jpg", 360, 480)
-# zoom("Zoom_in_(2).jpg", 2592, 1456)
-# zoom("Zoom_in_(3).jpg", 720, 990)
+begin = time.time()
+zoom("Zoom_in_(1).jpg", 360, 480)
+zoom("Zoom_in_(2).jpg", 2592, 1456)
+zoom("Zoom_in_(3).jpg", 720, 990)
 
-# zoom("Zoom_out_(1).jpg", 271, 120)
+zoom("Zoom_out_(1).jpg", 271, 120)
 zoom("Zoom_out_(2).jpg", 317, 500)
-# zoom("Zoom_out_(3).jpg", 174, 500)
+zoom("Zoom_out_(3).jpg", 174, 500)
+
+zoom("Zoom_in_(bonus).jpg", 1920, 1080)
+end = time.time()
+
+print("Finalizado: " + str(round(end-begin, 2)) + "s\n")

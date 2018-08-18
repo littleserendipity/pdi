@@ -2,5 +2,5 @@
 
 Projeto e listas da cadeira PDI - POLI (2018.2)
 
-### Requisitos
+### Requisitos (module)
     1. PIL
