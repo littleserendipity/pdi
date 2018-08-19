@@ -8,7 +8,7 @@ numpy.set_printoptions(threshold=numpy.nan)
 
 def zoom_bi(img, newWidth, newHeight):
         path = "zoom"
-        save_path = os.path.join(path, "resultBilinear", img)
+        save_path = os.path.join(path, "result_bilinear", img)
         im = Image.open(os.path.join(path, img), "r")
         imageArray = numpy.array(im, dtype=numpy.uint8)
         width, height = im.size
@@ -45,7 +45,7 @@ def zoom_bi(img, newWidth, newHeight):
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         Image.fromarray(newImageArray).save(save_path)
 
-
+begin = time.time()
 zoom_bi("Zoom_in_(1).jpg", 360, 480)
 zoom_bi("Zoom_in_(2).jpg", 2592, 1456)
 zoom_bi("Zoom_in_(3).jpg", 720, 990)
@@ -53,4 +53,6 @@ zoom_bi("Zoom_in_(3).jpg", 720, 990)
 zoom_bi("Zoom_out_(1).jpg", 271, 120)
 zoom_bi("Zoom_out_(2).jpg", 317, 500)
 zoom_bi("Zoom_out_(3).jpg", 174, 500)
+end = time.time()
 
+print("Finalizado: " + str(round(end-begin, 2)) + "s\n")

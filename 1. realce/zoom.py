@@ -36,8 +36,6 @@ zoom("Zoom_in_(3).jpg", 720, 990)
 zoom("Zoom_out_(1).jpg", 271, 120)
 zoom("Zoom_out_(2).jpg", 317, 500)
 zoom("Zoom_out_(3).jpg", 174, 500)
-
-zoom("Zoom_in_(bonus).jpg", 1920, 1080)
 end = time.time()
 
 print("Finalizado: " + str(round(end-begin, 2)) + "s\n")
