@@ -12,13 +12,19 @@ def zoom_bi(img, newWidth, newHeight):
         im = Image.open(os.path.join(path, img), "r")
         imageArray = numpy.array(im, dtype=numpy.uint8)
         width, height = im.size
-        s_r = width/newWidth
-        s_c = height/newHeight
+        if(width > newWidth):
+                sr = width/newWidth
+        else:
+                sr = (width - 1)/newWidth
+        if(height > newHeight):
+                sc = height/newHeight
+        else:
+                sc = (height-1)/newHeight
         newImageArray = numpy.zeros((newHeight, newWidth, 3), dtype=numpy.uint8)
         for y in range(newHeight):
                 for x in range(newWidth):
-                        rf = x * s_r
-                        cf = y * s_c
+                        rf = x * sr
+                        cf = y * sc
                         r0 = math.floor(rf)
                         c0 = math.floor(cf)
                         deltaR = rf - r0
