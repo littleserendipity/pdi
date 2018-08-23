@@ -53,9 +53,14 @@ def getWindowAVG(arr, y, x):
     l_avg = [int(numpy.mean(values)), numpy.std(values)]
     return l_avg
 
-def darken(g_avg, l_avg):
-    k = [0.1, 2, 2]
-    if (l_avg[0] > g_avg[0]):
+def clear(k, g_avg, l_avg):
+    if (l_avg[0] <= g_avg[0]):
+        if (l_avg[1] > (g_avg[1] * k[0]) and (l_avg[1] < (g_avg[1] * k[1]))):
+            return k[2]
+    return 0
+
+def darken(k, g_avg, l_avg):
+    if (l_avg[0] >= g_avg[0]):
         if (l_avg[1] > (g_avg[1] * k[0]) and (l_avg[1] < (g_avg[1] * k[1]))):
             return k[2]
     return 0
@@ -70,16 +75,18 @@ def realce(img, option):
     arr = numpy.array(im, dtype=numpy.uint8)
     n_arr = numpy.zeros((height, width), dtype=numpy.uint8)
 
+    k = [0.1, 1, 2]
     g_avg = [numpy.mean(arr), numpy.std(arr)]
+    print("Média global: " + str(g_avg[0]) + " | Desvio padrão global: " + str(g_avg[1]))
 
     for y in range(height):
         for x in range(width):
             l_avg = getWindowAVG(arr, y, x)
 
             if (option == "darken"):
-                k3 = darken(g_avg, l_avg)
+                k3 = darken(k, g_avg, l_avg)
             elif (option == "clear"):
-                k3 = darken(g_avg, l_avg)
+                k3 = clear(k, g_avg, l_avg)
 
             if (option == "darken" and k3 > 0):
                 n_arr[y, x] = int(arr[y, x] / k3)
@@ -88,7 +95,12 @@ def realce(img, option):
             else:
                 n_arr[y, x] = arr[y, x]
 
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            if (n_arr[y, x] < 0):
+                n_arr[y, x] = 0
+            elif (n_arr[y, x] > 255):
+                n_arr[y, x] = 255
+            
+    # os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     # h_arr, g_arr = histogram(arr)
     # printHistogramTxt(save_path, g_arr)
