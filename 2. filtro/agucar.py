@@ -3,25 +3,31 @@ import numpy
 import time
 import os
 
-def isPixelValid(arr, y, x):
+def isIndexValid(arr, y, x):
     if ((y >= 0 and y < len(arr)) and (x >= 0 and x < len(arr[0]))):
         return True
     else:
         return False
 
+def getPixelValid(pixel):
+    if (pixel < 0):
+        return 0
+    elif (pixel > 255):
+        return 255
+    else:
+        return pixel
+
 def getWindowAVG(arr, y, x):
     values = []
-
     for y2 in range(-1, 2):
         for x2 in range(-1, 2):
             temp_y = y + y2
             temp_x = x + x2
 
-            if (isPixelValid(arr, temp_y, temp_x)):
+            if (isIndexValid(arr, temp_y, temp_x)):
                 values.append(arr[temp_y, temp_x])
 
-    l_avg = [int(numpy.mean(values)), numpy.std(values)]
-    return l_avg
+    return getPixelValid(int(numpy.mean(values)))
 
 def agucar(img):
     path = "agucar"
@@ -35,11 +41,7 @@ def agucar(img):
 
     for y in range(height):
         for x in range(width):
-            
-            if (n_arr[y, x] < 0):
-                n_arr[y, x] = 0
-            elif (n_arr[y, x] > 255):
-                n_arr[y, x] = 255
+            n_arr[y, x] = getWindowAVG(arr, y, x)
             
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     Image.fromarray(n_arr).show()
