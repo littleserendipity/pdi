@@ -9,25 +9,31 @@ def isIndexValid(arr, y, x):
     else:
         return False
 
-def getPixelValid(pixel):
-    if (pixel < 0):
-        return 0
-    elif (pixel > 255):
-        return 255
-    else:
-        return pixel
+def getPixelRange(pixel):
+    return numpy.minimum(255, numpy.maximum(0, pixel))
 
-def getWindowAVG(arr, y, x):
-    values = []
-    for y2 in range(-1, 2):
-        for x2 in range(-1, 2):
+def sharpering(arr, y, x):
+    total = 0
+    mask = numpy.array([
+        [-1, -1, -1], 
+        [-1, 9, -1], 
+        [-1, -1, -1]
+    ])
+
+    begin = (0 - int(len(mask)/2))
+    end = (1 + int(len(mask[0])/2))
+
+    for y2 in range(begin, end):
+        for x2 in range(begin, end):
             temp_y = y + y2
             temp_x = x + x2
 
             if (isIndexValid(arr, temp_y, temp_x)):
-                values.append(arr[temp_y, temp_x])
+                mask_x = y2 + len(mask) - begin - end - 1
+                mask_y = x2 + len(mask) - begin - end - 1
+                total += (mask[mask_y, mask_x] * arr[temp_y, temp_x])
 
-    return getPixelValid(int(numpy.mean(values)))
+    return getPixelRange( total )
 
 def agucar(img):
     path = "agucar"
@@ -41,7 +47,7 @@ def agucar(img):
 
     for y in range(height):
         for x in range(width):
-            n_arr[y, x] = getWindowAVG(arr, y, x)
+            n_arr[y, x] = arr[y,x] + sharpering(arr, y, x)
             
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     Image.fromarray(n_arr).show()
