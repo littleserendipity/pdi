@@ -14,6 +14,7 @@ def getPixelRange(pixel):
 
 def sharpering(mask, arr, y, x):
     total = 0
+    count = 0
     begin = -int(len(mask)/2)
     end = int(len(mask[0])/2)
 
@@ -26,17 +27,23 @@ def sharpering(mask, arr, y, x):
                 mask_x = y2 - begin
                 mask_y = x2 - begin
                 total += (mask[mask_y, mask_x] * arr[temp_y, temp_x])
+                count += 1
 
-    return total
+    return (total/count)
 
-def agucar(img):
+def suavizar(img):
     mask = numpy.array([
-        [-1, -1, -1], 
-        [-1,  8, -1], 
-        [-1, -1, -1]
+        # [1, 1, 1], 
+        # [1, 1, 1], 
+        # [1, 1, 1], 
+        [1, 1, 1, 1, 1], 
+        [1, 1, 1, 1, 1], 
+        [1, 1, 1, 1, 1], 
+        [1, 1, 1, 1, 1], 
+        [1, 1, 1, 1, 1],
     ])
 
-    path = "agucar"
+    path = "suavizar"
     extension = ( "_" + str(len(mask)) + "x" + str(len(mask[0])) + "_result." )
     save_path = os.path.join(path, img.replace(".", extension))
 
@@ -48,7 +55,7 @@ def agucar(img):
 
     for y in range(height):
         for x in range(width):
-            n_arr[y, x] = getPixelRange(arr[y,x] + sharpering(mask, arr, y, x))
+            n_arr[y, x] = getPixelRange(sharpering(mask, arr, y, x))
             
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     # Image.fromarray(n_arr).show()
@@ -56,8 +63,8 @@ def agucar(img):
     print("Original:\n" + str(arr) + "\n\nResultado:\n" + str(n_arr))
 
 begin = time.time()
-agucar("Agucar_(1).jpg")
-agucar("Agucar_(2).jpg")
+suavizar("Suavizar_(1).jpg")
+suavizar("Suavizar_(2).jpg")
 end = time.time()
 
 print("Finalizado: " + str(round(end-begin, 2)) + "s\n")
