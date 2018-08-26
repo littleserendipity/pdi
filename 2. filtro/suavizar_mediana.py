@@ -9,7 +9,9 @@ numpy.set_printoptions(threshold=numpy.nan)
 def median(img, r):
         path = "suavizar"
         size = (2*r) + 1
-        save_path = os.path.join(path, "result_suavizar", "resultado_" + str(size) + "x" + str(size) + "_"  + img)
+        extension =  ( "_result_mediana_" + str(size) + "x" + str(size) + "." )
+        save_path = os.path.join(path, img.replace(".", extension))
+
         im = Image.open(os.path.join(path, img), "r")
         imageArray = numpy.array(im, dtype=numpy.uint8)
         width, height = im.size
@@ -40,8 +42,8 @@ median("Suavizar_(1).jpg", 2) # 5x5
 median("Suavizar_(2).jpg", 2)
 median("Suavizar_(1).jpg", 3) # 7x7
 median("Suavizar_(2).jpg", 3)
-median("Suavizar_(1).jpg", 5) # 11x11
-median("Suavizar_(2).jpg", 5)
+# median("Suavizar_(1).jpg", 5) # 11x11
+# median("Suavizar_(2).jpg", 5)
 end = time.time()
 
 print("Finalizado: " + str(round(end-begin, 2)) + "s\n")

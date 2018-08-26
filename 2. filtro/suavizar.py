@@ -32,10 +32,13 @@ def sharpering(mask, arr, y, x):
     return (total/count)
 
 def suavizar(img):
+    # mask = numpy.array([
+        # [1, 1, 1], 
+        # [1, 1, 1], 
+        # [1, 1, 1], 
+    # ])
+
     mask = numpy.array([
-        # [1, 1, 1], 
-        # [1, 1, 1], 
-        # [1, 1, 1], 
         [1, 1, 1, 1, 1], 
         [1, 1, 1, 1, 1], 
         [1, 1, 1, 1, 1], 
@@ -44,7 +47,7 @@ def suavizar(img):
     ])
 
     path = "suavizar"
-    extension = ( "_" + str(len(mask)) + "x" + str(len(mask[0])) + "_result." )
+    extension = ( "_result_" + str(len(mask)) + "x" + str(len(mask[0])) + "." )
     save_path = os.path.join(path, img.replace(".", extension))
 
     im = Image.open(os.path.join(path, img), "r")

@@ -30,14 +30,22 @@ def sharpering(mask, arr, y, x):
     return total
 
 def agucar(img):
+    # mask = numpy.array([
+    #     [1,  1, 1], 
+    #     [1, -8, 1], 
+    #     [1,  1, 1],
+    # ])
+
     mask = numpy.array([
-        [-1, -1, -1], 
-        [-1,  8, -1], 
-        [-1, -1, -1]
+        [0, 0,   1,  0,  0],
+        [0, 1,   2,  1,  0],
+        [1, 2, -16,  2,  1],
+        [0, 1,   2,  1,  0],
+        [0, 0,   1,  0,  0],
     ])
 
     path = "agucar"
-    extension = ( "_" + str(len(mask)) + "x" + str(len(mask[0])) + "_result." )
+    extension = ( "_result_" + str(len(mask)) + "x" + str(len(mask[0])) + "." )
     save_path = os.path.join(path, img.replace(".", extension))
 
     im = Image.open(os.path.join(path, img), "r")
@@ -48,12 +56,11 @@ def agucar(img):
 
     for y in range(height):
         for x in range(width):
-            n_arr[y, x] = getPixelRange(arr[y,x] + sharpering(mask, arr, y, x))
+            n_arr[y, x] = getPixelRange(arr[y,x] - sharpering(mask, arr, y, x))
             
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     # Image.fromarray(n_arr).show()
     Image.fromarray(n_arr).save(save_path)
-    print("Original:\n" + str(arr) + "\n\nResultado:\n" + str(n_arr))
 
 begin = time.time()
 agucar("Agucar_(1).jpg")

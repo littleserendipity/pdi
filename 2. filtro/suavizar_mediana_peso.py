@@ -7,9 +7,11 @@ import os
 numpy.set_printoptions(threshold=numpy.nan)
 
 def medianWeight(img, r):
-        path = "Images"
+        path = "suavizar"
         size = (2*r) + 1
-        save_path = os.path.join(path, "result_suavizar", "resultadoPeso_" + str(size) + "x" + str(size) + "_"  + img)
+        extension = ( "_result_mediana_peso_" + str(size) + "x" + str(size) + "." )
+        save_path = os.path.join(path, img.replace(".", extension))
+
         im = Image.open(os.path.join(path, img), "r")
         imageArray = numpy.array(im, dtype=numpy.uint8)
         width, height = im.size
@@ -45,8 +47,8 @@ medianWeight("Suavizar_(1).jpg", 2) # 5x5
 medianWeight("Suavizar_(2).jpg", 2)
 medianWeight("Suavizar_(1).jpg", 3) # 7x7
 medianWeight("Suavizar_(2).jpg", 3)
-medianWeight("Suavizar_(1).jpg", 5) # 11x11
-medianWeight("Suavizar_(2).jpg", 5)
+# medianWeight("Suavizar_(1).jpg", 5) # 11x11
+# medianWeight("Suavizar_(2).jpg", 5)
 end = time.time()
 
 print("Finalizado: " + str(round(end-begin, 2)) + "s\n")
