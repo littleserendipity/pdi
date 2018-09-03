@@ -38,7 +38,7 @@ def fourier(img):
     f, m, n = fft2(arr)
     # saveImg(img, numpy.abs(f), "frequence")
 
-    f = numpy.conj(laplace((numpy.conj(f))))
+    f = laplace(f)
     # saveImg(img, numpy.abs(f), "laplace")
 
     i = ifft2(f, m, n)
