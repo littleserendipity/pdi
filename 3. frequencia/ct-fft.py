@@ -50,59 +50,50 @@ def laplace(arr):
     h, w = numpy.shape(arr)
     n_arr = numpy.zeros((h, w), arr.dtype)
 
+    # kernel = numpy.array([
+    #     1,  1,  1,
+    #     1, -8,  1,
+    #     1,  1,  1,
+    # ])
+
     kernel = numpy.array([
-        [0,  1/4, 0], 
-        [1/4, -2, 1/4], 
-        [0,  1/4, 0],
+        1/4,  1/4,  1/4,
+        1/4, -8/4,  1/4,
+        1/4,  1/4,  1/4,
     ])
+
+    radius = int(numpy.sqrt(len(kernel))/2)
 
     for y in range(h):
         for x in range(w):
-            # n_arr[y,x] = (arr[y,x] - sharpering(kernel, arr, y, x))
-            n_arr[y,x] = (sharpering(kernel, arr, y, x))
+            # n_arr[y,x] = (arr[y,x] - numpy.sum(kernel * getNeighbors(arr, y, x)))
+            n_arr[y,x] = numpy.sum(kernel * getNeighbors(arr, y, x, radius))
     return n_arr
 
-def sharpering(kernel, arr, y, x):
-    total = 0
-    begin = -(len(kernel)//2)
-    end = len(kernel[0])//2
-    for y2 in range(begin, end+1):
-        for x2 in range(begin, end+1):
-            temp_y = y + y2
-            temp_x = x + x2
-            if (isIndexValid(arr, temp_y, temp_x)):
-                kernel_x = y2 - begin
-                kernel_y = x2 - begin
-                total += (kernel[kernel_y, kernel_x] * arr[temp_y, temp_x])
-    return total
+def getNeighbors(arr, y, x, radius=1):
+    begin, end = -(radius), (radius+1)
+    return [getPixel(arr, (y+v), (x+u)) for v in range(begin, end) for u in range(begin, end)]
 
-def isIndexValid(arr, y, x):
+def getPixel(arr, y, x):
     if ((y >= 0 and y < len(arr)) and (x >= 0 and x < len(arr[0]))):
-        return True
-    return False
-
-def pixelRange(arr):
-    for y in range(len(arr)):
-        for x in range(len(arr[0])):
-            arr[y,x] = int(numpy.minimum(0, numpy.maximum(0, arr[y,x])))
-    return arr
+        return arr[y,x]
+    return 0
 
 def openImg(img):
-    im = Image.open(img, "r")
-    return numpy.array(im, dtype=numpy.uint64)
+    return numpy.array(Image.open(img, "r"), dtype=numpy.float64)
 
 def saveImg(img, n_arr, extension=""):
     os.makedirs(os.path.dirname(img), exist_ok=True)
-    ext = "_result_" + extension + "."
     Image.fromarray(n_arr).convert("L").show()
-    # Image.fromarray(n_arr).convert("L").save(img.replace(".", ext))
+    # Image.fromarray(n_arr).convert("L").save(img.replace(".", ("_result_" + extension + ".")))
 
 
+### Main ###
 def main():
     img = [
         "Agucar_(1).jpg",
         # "Agucar_(2).jpg",
-        "Agucar_(3).jpg",
+        # "Agucar_(3).jpg",
         # "Agucar_(4).jpg",
         # "Agucar_(5).jpg",
     ]
