@@ -9,6 +9,7 @@ numpy.set_printoptions(threshold=numpy.nan)
 
 def DFT(array1D, invert):
         M = len(array1D)
+        #print("Array 1D Lenght: " + str(M))
         multiplier = 1/(math.sqrt(M))
         #numReal = []
         #numImaginary = []
@@ -28,24 +29,19 @@ def DFT(array1D, invert):
                 sumImaginary *= multiplier
                 #numReal.append(sumReal)
                 #numImaginary.append(sumImaginary)
-                if(invert):
-                	numComplete.append(int(round(numpy.abs(sumReal + sumImaginary))))
-                else:
-                	numComplete.append(sumReal + sumImaginary)
-
-        #print(array1D)
-        #print(numReal)
-        #print(numImaginary)
-        #print(numComplete)
-
+                #numComplete.append(int(round(numpy.abs(sumReal + sumImaginary))))
+                numComplete.append(sumReal + sumImaginary)
         return numComplete
 
 def DFT2D(array2D, invert):
         M = len(array2D)
         N = len(array2D[0])
+        #print("Lines: " + str(M))
+        #print("Columns: " + str(N))
         firstMatrix = []
         secondMatrix = []
 
+        
         for row in range(M):
                 tempRow = []
                 for col in range(N):
@@ -58,10 +54,7 @@ def DFT2D(array2D, invert):
                         tempCol.append(firstMatrix[row][col])
                 newCol = DFT(tempCol, invert)
                 secondMatrix.append(newCol)
-        #print(secondMatrix)
-        #print("Inverted: ")
-        matrixToNumpy = numpy.matrix(secondMatrix)
-        #print(matrixToNumpy.transpose())
+        secondMatrix = list(map(list, zip(*secondMatrix)))
         return secondMatrix
 
 
@@ -76,28 +69,20 @@ def filter(img):
 
 testArray = [1, 3, 5, 7, 9, 8, 6, 4, 2, 0]
 testMatrix = [[5, 3, 0, 2], [1, 7, 8, 3], [4, 2, 2, 2], [8, 5, 2, 1]]
-numpyTestArray = numpy.array(testArray)
-numpyTestMatrix = numpy.matrix(testMatrix)
-#DFT(testArray)
-fourierTest1D = numpy.fft.fft(numpyTestArray)
-fourierTest2D = numpy.fft.fft2(numpyTestMatrix)
-print("Original Array: ")
-print(testArray)
-print("1D DFT Test: ")
-test1D = DFT(testArray, False)
-print(test1D)
-print("1D DFT Invert Test")
-test1DInvert = DFT(test1D, True)
-print(test1DInvert)
+test2Matrix = [[0,0,0,0,0,0,0,0], [0,0,70,80,90,0,0,0],[0,0,90,100,110,0,0,0],[0,0,110,120,130,0,0,0],[0,0,130,140,150,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]]
 
+numpy.set_printoptions(suppress=True)
 print("Original Matrix: ")
-print(testMatrix)
+print(numpy.matrix(test2Matrix))
 print("2D DFT Test: ")
-test2D = DFT2D(testMatrix, False)
-print(test2D)
+test2D = DFT2D(test2Matrix, False)
+print(numpy.matrix(test2D))
 print("2D DFT Invert Test: ")
-test2DInvert = DFT2D(test2D, True)
-print(test2DInvert)
+test2DInvert = DFT2D(test2D,True)
+test2DInvert = numpy.array(test2DInvert)
+test2DInvert = numpy.round(numpy.abs(test2DInvert))
+test2DInvert = test2DInvert.astype(int)
+print(numpy.matrix(test2DInvert))
 
 begin = time.time()
 #filter("Agucar_(1).jpg")
