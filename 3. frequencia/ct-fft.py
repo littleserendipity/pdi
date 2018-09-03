@@ -3,7 +3,7 @@ import numpy
 import math
 import os
 
-### Fast Fourier Transform ###
+### Cooley-Tukey Fast Fourier Transform ###
 def fft(x):
     n = len(x)
     if (n == 1):
@@ -34,19 +34,15 @@ def ifft2(F, m, n):
 
 def fourier(img):
     arr = openImg(img)
+
     f, m, n = fft2(arr)
-    saveImg(img, numpy.abs(f), "frequence")
+    # saveImg(img, numpy.abs(f), "frequence")
 
-    # print(f[0,1])
-    # print(f[0,1].real)
-    # print(f[0,1].imag)
-    # print(numpy.abs(f[0,1]))
-
-    f = laplace(f.real)
-    saveImg(img, f, "laplace")
+    f = numpy.conj(laplace((numpy.conj(f))))
+    # saveImg(img, numpy.abs(f), "laplace")
 
     i = ifft2(f, m, n)
-    saveImg(img, pixelRange(i.real), "invert")
+    saveImg(img, numpy.abs(i), "invert")
 
 
 ### Utils ###
@@ -54,35 +50,30 @@ def laplace(arr):
     h, w = numpy.shape(arr)
     n_arr = numpy.zeros((h, w), arr.dtype)
 
-    # mask = numpy.array([
-    #     [1,  1, 1], 
-    #     [1, -8, 1], 
-    #     [1,  1, 1],
-    # ])
-
-    mask = numpy.array([
-        [0,  1, 0], 
-        [1, -4, 1], 
-        [0,  1, 0],
+    kernel = numpy.array([
+        [0,  1/4, 0], 
+        [1/4, -2, 1/4], 
+        [0,  1/4, 0],
     ])
 
     for y in range(h):
         for x in range(w):
-            n_arr[y,x] = (arr[y,x] - sharpering(mask, arr, y, x))
+            # n_arr[y,x] = (arr[y,x] - sharpering(kernel, arr, y, x))
+            n_arr[y,x] = (sharpering(kernel, arr, y, x))
     return n_arr
 
-def sharpering(mask, arr, y, x):
+def sharpering(kernel, arr, y, x):
     total = 0
-    begin = -int(len(mask)/2)
-    end = int(len(mask[0])/2)
+    begin = -(len(kernel)//2)
+    end = len(kernel[0])//2
     for y2 in range(begin, end+1):
         for x2 in range(begin, end+1):
             temp_y = y + y2
             temp_x = x + x2
             if (isIndexValid(arr, temp_y, temp_x)):
-                mask_x = y2 - begin
-                mask_y = x2 - begin
-                total += (mask[mask_y, mask_x] * arr[temp_y, temp_x])
+                kernel_x = y2 - begin
+                kernel_y = x2 - begin
+                total += (kernel[kernel_y, kernel_x] * arr[temp_y, temp_x])
     return total
 
 def isIndexValid(arr, y, x):
@@ -90,13 +81,10 @@ def isIndexValid(arr, y, x):
         return True
     return False
 
-# def getPixelRange(pixel):
-#     return numpy.minimum(255, numpy.maximum(0, pixel))
-
 def pixelRange(arr):
     for y in range(len(arr)):
         for x in range(len(arr[0])):
-            arr[y,x] = int(numpy.minimum(255, numpy.maximum(0, arr[y,x])))
+            arr[y,x] = int(numpy.minimum(0, numpy.maximum(0, arr[y,x])))
     return arr
 
 def openImg(img):
@@ -114,7 +102,7 @@ def main():
     img = [
         "Agucar_(1).jpg",
         # "Agucar_(2).jpg",
-        # "Agucar_(3).jpg",
+        "Agucar_(3).jpg",
         # "Agucar_(4).jpg",
         # "Agucar_(5).jpg",
     ]
