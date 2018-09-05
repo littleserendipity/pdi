@@ -92,7 +92,7 @@ def DFT2D(array2D, invert):
 
 
 def filter(img):
-        path = "Images"
+        path = "images"
         save_path = os.path.join(path, "result_frequencia", "resultado_" + img)
         im = Image.open(os.path.join(path, img), "r")
         imageArray = numpy.array(im, dtype=numpy.uint8)
