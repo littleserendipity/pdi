@@ -36,7 +36,7 @@ def fourier(img):
     arr = openImg(img)
 
     f, m, n = fft2(arr)
-    # saveImg(img, numpy.abs(f), "frequence")
+    saveImg(img, numpy.abs(f), "frequence")
 
     f = applyFilter(f)
     # saveImg(img, numpy.abs(f), "laplace")
@@ -49,8 +49,6 @@ def fourier(img):
 ### Utils ###
 def applyFilter(arr):
     h, w = numpy.shape(arr)
-    # H = numpy.zeros((h, w), arr.dtype)
-
     P = (2*h + 1)
     Q = (2*w + 1)
     Dzero = 320
@@ -58,7 +56,6 @@ def applyFilter(arr):
 
     for v in range(h):
         for u in range(w):
-
             D = math.sqrt((((u - (P/2))**2) + (((v - (Q/2))**2))))
 
             # H[v,u] = (1 / (1 + ((D0 / D)**(2*n))))                ## butterworth
@@ -66,44 +63,25 @@ def applyFilter(arr):
             # H[v,u] = (-4 * (numpy.pi**2) * ((u**2) + (v**2)))     ## laplaciano
 
             arr[v,u] = (arr[v,u] * (1 - numpy.exp(-(D**2) / (2*(Dzero**2)))))
-
     return arr
-    # return numpy.multiply(arr, H)
-
-# kernel = numpy.array([
-#     1/4,  1/4,  1/4,
-#     1/4, -8/4,  1/4,
-#     1/4,  1/4,  1/4,
-# ])
-# radius = int(numpy.sqrt(len(kernel))/2)
-# n_arr[y,x] = (numpy.sum(kernel * getNeighbors(arr, y, x, radius)))
-# def getNeighbors(arr, y, x, radius=1):
-#     begin, end = -(radius), (radius+1)
-#     return [getPixel(arr, (y+v), (x+u)) for v in range(begin, end) for u in range(begin, end)]
-
-# def getPixel(arr, y, x):
-#     if ((y >= 0 and y < len(arr)) and (x >= 0 and x < len(arr[0]))):
-#         return arr[y,x]
-#     return 0
 
 def openImg(img):
     return numpy.array(Image.open(img, "r"), dtype=numpy.float64)
 
 def saveImg(img, n_arr, extension=""):
     os.makedirs(os.path.dirname(img), exist_ok=True)
-    Image.fromarray(n_arr).convert("L").show()
-    # Image.fromarray(n_arr).convert("L").save(img.replace(".", ("_" + extension + ".")))
-
+    # Image.fromarray(n_arr).convert("L").show()
+    Image.fromarray(n_arr).convert("L").save(img.replace(".", ("_" + extension + ".")))
 
 ### Main ###
 def main():
     img = [
         "Agucar_(0).jpg",
-        "Agucar_(1).jpg",
-        "Agucar_(2).jpg",
-        "Agucar_(3).jpg",
-        "Agucar_(4).jpg",
-        "Agucar_(5).jpg",
+        # "Agucar_(1).jpg",
+        # "Agucar_(2).jpg",
+        # "Agucar_(3).jpg",
+        # "Agucar_(4).jpg",
+        # "Agucar_(5).jpg",
     ]
     for x in range(len(img)):
         fourier(os.path.join("images", img[x]))

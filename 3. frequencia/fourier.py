@@ -77,9 +77,10 @@ def showImg(F, mode="Greys_r"):
 def readImg(img, path="images"):
     return np.array(Image.open(os.path.join(path, img), "r"), dtype=np.float64)
 
-def saveImg(img_name, img_array, extension=None, path="images", mode="Greys_r"):
-    os.makedirs(path, exist_ok=True)
-    plot.imsave(os.path.join(path, img_name.replace(".", ("_" + extension + "."))), img_array, cmap=mode)
+def saveImg(img_name, img_array=None, extension=None, path="images", mode="Greys_r"):
+    if (not img_array is None):
+        os.makedirs(path, exist_ok=True)
+        plot.imsave(os.path.join(path, img_name.replace(".", ("_" + extension + "."))), img_array, cmap=mode)
 
 ### Main ###
 def main():
