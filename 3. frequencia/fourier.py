@@ -9,7 +9,7 @@ def fft(arr, type=None):
 
     x = np.arange(M, dtype=float)
     y = np.arange(N, dtype=float)
-    
+
     u = x.reshape((M,1))
     v = y.reshape((N,1))
 
@@ -35,33 +35,34 @@ def prepare(arr) :
 
     return np.transpose(np.log(n_arr**2))
 
-def applyFilter(arr):
+def getFilter(arr):
     h, w = np.shape(arr)
-    n_arr = np.zeros((h, w), arr.dtype)
-    Dzero = 160
+    H = np.zeros((h, w), arr.dtype)
+    Dzero = 60
 
     for v in range(h):
         for u in range(w):
-            D = np.sqrt((((u - h)**2) + (((v - w)**2))))
+            D = np.sqrt((((u - (w/2))**2) + (((v - (h/2))**2))))
 
-            # n_arr[v,u] = arr[v,u] * (1 / (1 + ((Dzero / D)**(2*2))))          ## butterworth
-            # n_arr[v,u] = arr[v,u] * (1 - np.exp(-(D**2) / (2*(Dzero**2))))    ## gaussiano
-            # n_arr[v,u] = arr[v,u] * (-4 * (np.pi**2) * ((u**2) + (v**2)))     ## laplaciano
+            # H[v,u] = (1 / (1 + ((Dzero / D)**(2*2))))          ## butterworth
+            # H[v,u] = (1 - np.exp(-(D**2) / (2*(Dzero**2))))    ## gaussiano
+            # H[v,u] = (-4 * (np.pi**2) * ((u**2) + (v**2)))
             
-            n_arr[v,u] = arr[v,u] * (1 - np.exp(-(D**2) / (2*(Dzero**2))))
-
-    return np.add(arr, n_arr)
+            H[v,u] = (1 - np.exp(-(D**2) / (2*(Dzero**2))))
+    return H
 
 def fourier(img_name):
     arr = readImg(img_name)
 
     F = fft(arr)
-    saveImg(img_name, prepare(F), "r_frequency")
+    # saveImg(img_name, prepare(F), "r_frequency")
     # showImg(prepare(F))
 
-    f = applyFilter(F)
-    # saveImg(img_name, prepare(f), "r_frequency_filter")
+    H = getFilter(F)
+    # saveImg(img_name, np.abs(H), "r_frequency_filter")
     # showImg(prepare(f))
+
+    f = np.multiply(F, H)
 
     i = np.abs(fft(f, "i"))
     # showImg(i)
@@ -85,7 +86,7 @@ def saveImg(img_name, img_array=None, extension=None, path="images", mode="Greys
 ### Main ###
 def main():
     img = [
-        "Agucar_(0).jpg",
+        # "Agucar_(0).jpg",
         "Agucar_(1).jpg",
         "Agucar_(2).jpg",
         "Agucar_(3).jpg",
