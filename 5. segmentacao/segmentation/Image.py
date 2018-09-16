@@ -1,4 +1,4 @@
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import Utils as utl
 
@@ -27,12 +27,12 @@ class Image():
         self.shapes = self.arr.shape
 
     def show(self, mode="Greys_r"):
-        plt.imshow(self.arr, cmap=mode, vmin=0, vmax=255)
+        plt.imshow(self.arr, cmap=mode)
         plt.show()
 
     def save(self, extension, mode="Greys_r"):
         name = self.path.getNameResult(self.name, extension)
-        plt.imsave(self.path.getPathSave(name), self.arr, cmap=mode, vmin=0, vmax=255)
+        plt.imsave(self.path.getPathSave(name), self.arr, cmap=mode)
 
     def clear(self, kernel=None, times=2, side=3):
         gaussian_filter = np.array([
