@@ -9,7 +9,7 @@ class Path():
         return os.path.join(self.resources, file_name)
 
     def getNameResult(self, file_name, extension):
-        return (extension + "_" + file_name)
+        return file_name.replace(".", ("_"+extension+"."))
 
     def getPathSave(self, name):
         os.makedirs(self.results, exist_ok=True)
