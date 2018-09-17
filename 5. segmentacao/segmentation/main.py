@@ -21,21 +21,21 @@ def main():
     ### questão 2
     s = seg.Thresholding()
 
-    img = im.Image("Image_(3a).jpg", noise=5, gauss=True)  
-    s_img = s.otsu(img, edge=True)
-    s_img.save(extension="edge_thresholding")
-
     img = im.Image("Image_(3a).jpg", noise=2, median=True)  
     s_img = s.otsu(img)
     s_img.save(extension="thresholding")
 
-    img = im.Image("Image_(3b).jpg", noise=41, median=True, gauss=True)  
+    img = im.Image("Image_(3a).jpg", noise=5, gauss=True)  
     s_img = s.otsu(img, edge=True)
     s_img.save(extension="edge_thresholding")
 
     img = im.Image("Image_(3b).jpg", noise=3, median=True, gauss=True)  
     s_img = s.otsu(img)
     s_img.save(extension="thresholding")
+
+    img = im.Image("Image_(3b).jpg", noise=41, median=True, gauss=True)  
+    s_img = s.otsu(img, edge=True)
+    s_img.save(extension="edge_thresholding")
 
     img1 = s.otsu(im.Image("Image_(3b).jpg", noise=41, median=True, gauss=True), edge=True)
     img2 = s.otsu(im.Image("Image_(3b).jpg", noise=3, median=True, gauss=True))
