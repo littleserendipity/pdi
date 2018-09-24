@@ -32,15 +32,16 @@ class Morphology(object):
 
     def dilate(self, image, kernel=None, side=3):
         if (kernel is None):
-            kernel = np.zeros((side,side))
-        return self.filterMorph(image, kernel, np.prod, np.multiply)
+            kernel = np.ones((side,side))
+        return self.filterMorph(image, kernel, 1, np.prod, np.multiply)
     
     def erode(self, image, kernel=None, side=3):
         if (kernel is None):
-            kernel = np.zeros((side,side))
-        return self.filterMorph(image, kernel, np.sum, np.add)
+            kernel = np.ones((side,side))
+        kernel = np.logical_not(kernel)
+        return self.filterMorph(image, kernel, 0, np.sum, np.add)
 
-    def filterMorph(self, image, kernel, externalFunction, internalFunction):
+    def filterMorph(self, image, kernel, factor, externalFunction, internalFunction):
         im = copy.deepcopy(image)
         m, n = kernel.shape
         pad_h, pad_w = (m//2), (n//2)
@@ -53,8 +54,28 @@ class Morphology(object):
         for i in range(pad_h, H+pad_h):
             for j in range(pad_w, W+pad_w):
                 current_window = img[i-pad_h:i+m-pad_h, j-pad_w:j+n-pad_w]
-                new_img[i,j] = externalFunction(internalFunction(current_window, kernel))
+                new_img[i,j] = externalFunction(internalFunction(current_window[kernel==factor], kernel[kernel==factor]))
 
         new_img[new_img > 0] = 1
         im.setImg(new_img[pad_h:-pad_h,pad_w:-pad_w])
+        return im
+
+    def floodFill(self, image, start, fill_value):
+        im = copy.deepcopy(image)
+        W, H = im.arr.shape
+        orig_value = im.arr[start[0], start[1]]
+        stack = set(((start[0], start[1]),))
+
+        while stack:
+            x, y = stack.pop()
+            if (im.arr[x, y] == orig_value):
+                im.arr[x, y] = fill_value
+                if (x > 0):
+                    stack.add((x - 1, y))
+                if (x < (W - 1)):
+                    stack.add((x + 1, y))
+                if (y > 0):
+                    stack.add((x, y - 1))
+                if (y < (H - 1)):
+                    stack.add((x, y + 1))
         return im
