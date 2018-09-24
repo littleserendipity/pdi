@@ -60,6 +60,34 @@ class Morphology(object):
         im.setImg(new_img[pad_h:-pad_h,pad_w:-pad_w])
         return im
 
+    def skeleton(self, image):
+        img = copy.deepcopy(image)
+
+        kernel = np.array([
+            [1,1,1,0,0,0,1,1,1],
+            [0,1,1,1,0,1,1,1,0],
+            [0,1,1,1,1,1,1,1,0],
+            [0,1,1,1,1,1,1,1,0],
+            [0,1,1,1,1,1,1,1,0],
+            [0,1,1,1,1,1,1,1,0],
+            [0,1,1,1,1,1,1,1,0],
+            [0,1,1,1,1,1,1,1,0],
+            [0,1,1,1,1,1,1,1,0],
+        ])
+
+        kernel2 = np.array([
+            [0,1,1,1,0],
+            [0,1,1,1,0],
+            [0,1,1,1,0],
+            [1,1,0,1,1],
+            [1,0,0,0,1],
+        ])
+
+        img = self.dilate(img, kernel=kernel)
+        img = self.dilate(img, kernel=kernel2)
+        img = self.erode(img, kernel=kernel)
+        return img
+
     def floodFill(self, image, start, fill_value):
         im = copy.deepcopy(image)
         W, H = im.arr.shape
