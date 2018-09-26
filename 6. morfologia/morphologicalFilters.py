@@ -29,7 +29,7 @@ def dilation(imageArray, dil=[[1, 1, 1], [1, 1, 1], [1, 1, 1]], center=[0,0]):
 	#Image.fromarray(newImageArray).save(save_path)
 	return newImageArray
 
-def erosion(imageArray, ero=[[1, 1, 1], [1, 1, 1], [1, 1, 1]]):
+def erosion(imageArray, ero=[[1, 1, 1], [1, 1, 1], [1, 1, 1]], center=[0,0]):
 	#path = "Images"
 	#im = Image.open(os.path.join(path, img), "r")
 	#imageArray = numpy.array(im, dtype=numpy.uint8)
@@ -49,8 +49,8 @@ def erosion(imageArray, ero=[[1, 1, 1], [1, 1, 1], [1, 1, 1]]):
 				for xx in range(widthERO):
 					for yy in range(heightERO):
 						if(ero[xx, yy] > 0):
-							if(y + yy < height and x + xx < width):
-								if(imageArray[yy+y, xx+x] >= 128): # should be > 0, but since the image isn't really binary, I have to do this   
+							if(y + yy -center[1]< height and x + xx -center[0]< width):
+								if(imageArray[yy+y-center[1], xx+x-center[0]] >= 128): # should be > 0, but since the image isn't really binary, I have to do this   
 									willAppear = False
 							else:
 								willAppear = False
@@ -65,10 +65,11 @@ def removeDots(img, bArray = [[1, 1, 1], [1, 1, 1], [1, 1, 1]]):
 	path = "Images"
 	im = Image.open(os.path.join(path, img), "r")
 	imageArray = numpy.array(im, dtype=numpy.uint8)
-	save_path = os.path.join(path, "result_morph", "resultadoFinalMao2Dilatacoes_array=" + str(bArray).replace('\n','') + ".png")	
-	imageErosion = erosion(imageArray, ero=bArray)
-	imageFinal = dilation(imageErosion, dil=bArray)
-	imageFinal2 = dilation(imageFinal, dil=bArray)
+	cen = [1,1]
+	save_path = os.path.join(path, "result_morph", "resultadoFinalMao2Dilatacoes_array=" + str(bArray).replace('\n','') + " center=" + str(cen).replace('\n','') + ".png")	
+	imageErosion = erosion(imageArray, ero=bArray, center=cen)
+	imageFinal = dilation(imageErosion, dil=bArray, center=cen)
+	imageFinal2 = dilation(imageFinal, dil=bArray, center=cen)
 	os.makedirs(os.path.dirname(save_path), exist_ok=True)
 	Image.fromarray(imageFinal2).save(save_path)
 
@@ -226,9 +227,9 @@ def preenchimento(img):
 
 
 begin = time.time()
-#removeDots("Image_(2a).jpg")
+removeDots("Image_(2a).jpg")
 #contorno("maoDilatada.png")
-preenchimento("Image_(3a).jpg")
+#preenchimento("Image_(3a).jpg")
 #preenchimento("letterA.png")
 #contorno("Image_(3a).jpg")
 end = time.time()
