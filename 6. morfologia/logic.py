@@ -28,6 +28,8 @@ def logicOperations(img1, img2):
 			# not 0 will return 1, and we need it to be 255
 			if newImageArrayNAND[yy, xx] > 0:
 				newImageArrayNAND[yy, xx] = 255
+			if newImageArrayXOR[yy, xx] > 0:
+				newImageArrayXOR[yy, xx] = 255
 
 
 	os.makedirs(os.path.dirname(save_pathOR), exist_ok=True)
