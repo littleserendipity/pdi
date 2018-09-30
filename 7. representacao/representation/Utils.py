@@ -17,3 +17,10 @@ class Path():
     def getPathSave(self, name):
         os.makedirs(self.results, exist_ok=True)
         return os.path.join(self.results, name)
+
+class Data():
+
+    def saveVariable(self, name, extension, value):
+        n = Path().getNameResult(name+".txt", extension)
+        with open(Path().getPathSave(n), "w") as variable_file:
+            variable_file.write(value)

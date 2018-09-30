@@ -1,8 +1,14 @@
-import numpy as np
+import Utils as utl
 import Image as im
+import numpy as np
 import copy
 
 class Representation(object):
+    def __init__(self):
+        self.data = utl.Data()
+
+    def saveChain(self, name, extension, arr):
+        self.data.saveVariable(name, extension, arr)
 
     def setValues(self, directions):
         if (directions == 8):
@@ -36,7 +42,7 @@ class Representation(object):
         except:
             chain_norm = self.normalize(chain)
             img.setImg(n_img)
-        return (img, self.arrayToNumber(chain), self.arrayToNumber(chain_norm))
+        return (img, self.joinArray(chain), self.joinArray(chain_norm))
 
     def mooreNeighbor(self, arr, match, around, bg):
         for t in range(len(around)):
@@ -63,14 +69,14 @@ class Representation(object):
         elif indice == (0, -1):
             return 2 * mult
 
-    def arrayToNumber(self, arr):
+    def joinArray(self, arr):
         return (''.join(map(str, arr)))
 
     def normalize(self, arr):
         return self.normalizeByRotation(self.normalizeByPosition(arr))
 
     def normalizeByPosition(self, arr):
-        arr_str = self.arrayToNumber(arr)
+        arr_str = self.joinArray(arr)
         temp, temp_str = [0], arr_str
 
         while True:
