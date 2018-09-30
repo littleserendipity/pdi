@@ -22,13 +22,18 @@ class Representation(object):
 
         return self.directions
 
-    def chain(self, image, bg=0, directions=8):
+    def chain(self, image, directions=8):
         img = copy.deepcopy(image)
         img.clear(times=img.noise)
+        background = 0
+
+        if (img.arr[0,0] > background):
+            img.setImg(np.logical_not(img.arr))
+
         n_img = np.zeros(img.shapes)
         around = self.setValues(directions)
 
-        ind = np.argwhere(img.arr != bg)[0]
+        ind = np.argwhere(img.arr != background)[0]
         match = (ind[0],ind[1])
         indice = (0,1)
         chain = []
@@ -38,16 +43,17 @@ class Representation(object):
                 img.arr[match] = 0
                 n_img[match] = 1
                 chain.append(self.getCodChain(indice, len(around)//4))
-                match, indice, around = self.mooreNeighbor(img.arr, match, around, bg)
+                match, indice, around = self.mooreNeighbor(img.arr, match, around, background)
         except:
+            print("Chain: ", len(chain))
             chain_norm = self.normalize(chain)
             img.setImg(n_img)
         return (img, self.joinArray(chain), self.joinArray(chain_norm))
 
-    def mooreNeighbor(self, arr, match, around, bg):
+    def mooreNeighbor(self, arr, match, around, background):
         for t in range(len(around)):
             y, x = np.add(match, around[t])
-            if (arr[y,x] != bg):
+            if (arr[y,x] != background):
                 return [(y,x), around[t], (around[t-2:] + around[:t-2])]
         return False
 

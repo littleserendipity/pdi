@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import Utils as utl
+from matplotlib.collections import PolyCollection
 
 class Image():
     def __init__(self, img=None, name="image", type="png", noise=0, median=False, gauss=False):
