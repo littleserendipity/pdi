@@ -88,7 +88,7 @@ class Morphology(object):
         img = self.erode(img, kernel=kernel)
         return img
 
-    def floodFill(self, image, start, fill_value):
+    def floodFill(self, image, start=(0,0), fill_value=1):
         im = copy.deepcopy(image)
         W, H = im.arr.shape
         orig_value = im.arr[start[0], start[1]]

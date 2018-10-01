@@ -1,16 +1,21 @@
 import Utils as utl
-import Image as im
+import Morphology as mp
 import numpy as np
 import copy
 
+
+import matplotlib.pyplot as plt
+
+
 class Representation(object):
     def __init__(self):
+        self.m = mp.Morphology()
         self.data = utl.Data()
 
-    def saveChain(self, name, extension, arr):
-        self.data.saveVariable(name, extension, arr)
-
     def setValues(self, directions):
+        self.background = 0
+        self.mod = directions//4
+
         if (directions == 8):
             # self.directions = (-1,0),(-1,1),(0,1),(1,1),(1,0),(1,-1),(0,-1),(-1,-1)
             self.directions = (-1,0),(-1,1),(0,1),(1,1),(1,0),(1,-1),(-1,0),(-1,-1) ### (0,-1) changed
@@ -22,18 +27,16 @@ class Representation(object):
 
         return self.directions
 
-    def chain(self, image, directions=8):
+    def chain(self, image, directions=8, norm=True):
         img = copy.deepcopy(image)
         img.clear(times=img.noise)
-        background = 0
+        around = self.setValues(directions)
 
-        if (img.arr[0,0] > background):
+        if (img.arr[0,0] > self.background):
             img.setImg(np.logical_not(img.arr))
 
         n_img = np.zeros(img.shapes)
-        around = self.setValues(directions)
-
-        ind = np.argwhere(img.arr != background)[0]
+        ind = np.argwhere(img.arr != self.background)[0]
         match = (ind[0],ind[1])
         indice = (0,1)
         chain = []
@@ -42,13 +45,12 @@ class Representation(object):
             while match:
                 img.arr[match] = 0
                 n_img[match] = 1
-                chain.append(self.getCodChain(indice, len(around)//4))
-                match, indice, around = self.mooreNeighbor(img.arr, match, around, background)
+                chain.append(self.getCodChain(indice, self.mod))
+                match, indice, around = self.mooreNeighbor(img.arr, match, around, self.background)
         except:
-            print("Chain: ", len(chain))
-            chain_norm = self.normalize(chain)
+            chain_norm = self.joinArray(self.normalize(chain)) if norm else []
             img.setImg(n_img)
-        return (img, self.joinArray(chain), self.joinArray(chain_norm))
+        return [img, self.joinArray(chain), chain_norm]
 
     def mooreNeighbor(self, arr, match, around, background):
         for t in range(len(around)):
@@ -113,3 +115,79 @@ class Representation(object):
                         count = 0
         except:
             return result
+
+    def mpp(self, image, side=15):
+        img = copy.deepcopy(image)
+        m,n = img.shapes
+        n_img_temp = np.zeros((m,n))
+        n_img = np.zeros((m,n))
+
+        for y in range(0, m, side):
+            for x in range(0, n, side):
+                matrix = img.arr[y:y+side, x:x+side]
+                if (np.sum(matrix) > 0):
+                    n_img[y:y+side, x:x+side] += 1
+                    n_img_temp[y:y+side, x:x+side] += 1
+                    n_img_temp[y:y+side, x:x+side] *= np.logical_not(matrix)
+
+        img.setImg(n_img_temp)
+        img.save(extension="step_line")
+
+        img.setImg(n_img)
+        n_img = np.zeros((m,n))
+        
+        img = self.m.floodFill(img)
+        chain = list(map(int,list(self.chain(img, directions=4, norm=False)[1])))
+        match = np.argwhere(img.arr == self.background)[0]
+
+        img2 = self.m.floodFill(img, start=match)
+        img.setImg(np.logical_or(img.arr, np.logical_not(img2.arr)))
+
+        for y in range(0, m, side):
+            for x in range(0, n, side):
+                if (np.sum(img.arr[y:y+side, x:x+side]) == 0):
+                    d_up_left = np.sum(img.arr[y-side:y, x-side:x])
+                    left = np.sum(img.arr[y:y+side, x-side:x])  
+                    d_bottom_left = np.sum(img.arr[y+side:y+(side*2), x-side:x])
+                    
+                    # up = np.sum(img.arr[y-side:y, x:x+side])
+                    # bottom = np.sum(img.arr[y+side:y+(side*2), x:x+side])
+                    
+                    d_up_right = np.sum(img.arr[y-side:y, x+side:x+(side*2)])
+                    right = np.sum(img.arr[y:y+side, x+side:x+(side*2)])
+                    d_bottom_right = np.sum(img.arr[y+side:y+(side*2), x+side:x+(side*2)])
+
+                    if (left > 0 and d_up_left > 0):
+                        n_img[y, x+1] = 1
+                    if (left > 0 and d_bottom_left > 0):
+                        n_img[y+side-1, x+1] = 1
+                    if (right > 0 and d_up_right > 0):
+                        n_img[y, x+side] = 1
+                    if (right > 0 and d_bottom_right > 0):
+                        n_img[y+side-1, x+side] = 1
+
+        for x in range(0, len(chain)):
+            # n_img[match[0],match[1]] = 0
+
+            if (n_img[match[0],match[1]] > 0):
+                print("Line: ", match[0], match[1])
+
+            if (chain[x] == 0):
+                match[1] += 1
+            elif (chain[x] == 1):
+                match[0] -= 1
+            elif (chain[x] == 2):
+                match[1] -= 1
+            elif (chain[x] == 3):
+                match[0] += 1
+
+        # plt.plot([225, 255, 285], [45, 45, 60], color="black")
+        # plt.show()
+
+        img.setImg(n_img)
+        img.save(extension="step_points")
+
+        return img
+
+    def saveChain(self, name, extension, arr):
+        self.data.saveVariable(name, extension, arr)
