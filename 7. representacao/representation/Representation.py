@@ -1,16 +1,14 @@
 import Utils as utl
+import matplotlib.pyplot as plt
 import Morphology as mp
 import numpy as np
 import copy
 
-
-import matplotlib.pyplot as plt
-
-
 class Representation(object):
     def __init__(self):
-        self.m = mp.Morphology()
+        self.path = utl.Path()
         self.data = utl.Data()
+        self.m = mp.Morphology()
 
     def setValues(self, directions):
         self.background = 0
@@ -166,11 +164,15 @@ class Representation(object):
                     if (right > 0 and d_bottom_right > 0):
                         n_img[y+side-1, x+side] = 1
 
+        img.setImg(n_img)
+        img.save(extension="step_points")
+        pixel_y, pixel_x = [], []
+
         for x in range(0, len(chain)):
             # n_img[match[0],match[1]] = 0
-
             if (n_img[match[0],match[1]] > 0):
-                print("Line: ", match[0], match[1])
+                pixel_y.append(match[0])
+                pixel_x.append(match[1])
 
             if (chain[x] == 0):
                 match[1] += 1
@@ -181,12 +183,20 @@ class Representation(object):
             elif (chain[x] == 3):
                 match[0] += 1
 
-        # plt.plot([225, 255, 285], [45, 45, 60], color="black")
-        # plt.show()
+        pixel_y.append(pixel_y[0])
+        pixel_x.append(pixel_x[0])
 
-        img.setImg(n_img)
-        img.save(extension="step_points")
+        fig = plt.figure(frameon=False, figsize=(n/100,m/100))
+        plt.gca().plot(pixel_x, pixel_y, linewidth=3, color="black")
+        plt.gca().invert_yaxis()
+        plt.axis("off")
+        plt.subplots_adjust(top=0.96, bottom=0.05, right=0.94, left=0.1)
+        fig.canvas.draw()
+        plt.close()
 
+        x = np.array(fig.canvas.renderer._renderer)
+        img.setImg(np.logical_not(x), convert=True)
+        img.save(extension="step_polygon")
         return img
 
     def saveChain(self, name, extension, arr):

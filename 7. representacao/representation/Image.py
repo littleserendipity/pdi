@@ -25,9 +25,11 @@ class Image():
         if (len(self.arr.shape) == 3):
             self.arr = np.dot(self.arr[...,:3], [0.299, 0.587, 0.114])
 
-    def setImg(self, image) :
+    def setImg(self, image, convert=False):
         self.arr = np.asarray(image, dtype=float)
         self.shapes = self.arr.shape
+        if convert:
+            self.imageToGray()
 
     def show(self, mode="Greys_r"):
         plt.imshow(self.arr, cmap=mode)
