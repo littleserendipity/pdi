@@ -11,12 +11,11 @@ class Representation(object):
         self.m = mp.Morphology()
 
     def setValues(self, directions):
-        self.background = 0
+        self.bg_color = 0
         self.mod = directions//4
 
         if (directions == 8):
-            # self.directions = (-1,0),(-1,1),(0,1),(1,1),(1,0),(1,-1),(0,-1),(-1,-1)
-            self.directions = (-1,0),(-1,1),(0,1),(1,1),(1,0),(1,-1),(-1,0),(-1,-1) ### (0,-1) changed
+            self.directions = (-1,0),(-1,1),(0,1),(1,1),(1,0),(1,-1),(-1,0),(-1,-1)
             self.weight = np.tile(np.array([0, 1, 2, 3, 4, 5, 6, 7]), 2)
 
         elif (directions == 4):
@@ -25,16 +24,16 @@ class Representation(object):
 
         return self.directions
 
-    def chain(self, image, directions=8, norm=True):
+    def chain(self, image, directions=8, save=False, norm=True):
         img = copy.deepcopy(image)
         img.clear(times=img.noise)
         around = self.setValues(directions)
 
-        if (img.arr[0,0] > self.background):
+        if (img.arr[0,0] > self.bg_color):
             img.setImg(np.logical_not(img.arr))
 
         n_img = np.zeros(img.shapes)
-        ind = np.argwhere(img.arr != self.background)[0]
+        ind = np.argwhere(img.arr != self.bg_color)[0]
         match = (ind[0],ind[1])
         indice = (0,1)
         chain = []
@@ -44,16 +43,24 @@ class Representation(object):
                 img.arr[match] = 0
                 n_img[match] = 1
                 chain.append(self.getCodChain(indice, self.mod))
-                match, indice, around = self.mooreNeighbor(img.arr, match, around, self.background)
+                match, indice, around = self.mooreNeighbor(img.arr, match, around, self.bg_color)
         except:
-            chain_norm = self.joinArray(self.normalize(chain)) if norm else []
-            img.setImg(n_img)
-        return [img, self.joinArray(chain), chain_norm]
+            normalize = self.normalize(chain) if norm else []
 
-    def mooreNeighbor(self, arr, match, around, background):
+            if (save):
+                extension = str(directions)+"_directions_chain"
+                self.data.saveVariable(img.name, extension, self.joinArray(chain))
+                if (norm):
+                    self.data.saveVariable(img.name, extension+"_position", self.joinArray(normalize[0]))
+                    self.data.saveVariable(img.name, extension+"_position_rotation", self.joinArray(normalize[1]))
+
+            img.setImg(n_img)
+        return [img, chain, normalize]
+
+    def mooreNeighbor(self, arr, match, around, bg_color):
         for t in range(len(around)):
             y, x = np.add(match, around[t])
-            if (arr[y,x] != background):
+            if (arr[y,x] != bg_color):
                 return [(y,x), around[t], (around[t-2:] + around[:t-2])]
         return False
 
@@ -79,7 +86,9 @@ class Representation(object):
         return (''.join(map(str, arr)))
 
     def normalize(self, arr):
-        return self.normalizeByRotation(self.normalizeByPosition(arr))
+        position = self.normalizeByPosition(arr)
+        rotation = self.normalizeByRotation(position)
+        return [position, rotation]
 
     def normalizeByPosition(self, arr):
         arr_str = self.joinArray(arr)
@@ -136,7 +145,7 @@ class Representation(object):
         
         img = self.m.floodFill(img)
         chain = list(map(int,list(self.chain(img, directions=4, norm=False)[1])))
-        match = np.argwhere(img.arr == self.background)[0]
+        match = np.argwhere(img.arr == self.bg_color)[0]
 
         img2 = self.m.floodFill(img, start=match)
         img.setImg(np.logical_or(img.arr, np.logical_not(img2.arr)))
@@ -198,6 +207,3 @@ class Representation(object):
         img.setImg(np.logical_not(x), convert=True)
         img.save(extension="step_polygon")
         return img
-
-    def saveChain(self, name, extension, arr):
-        self.data.saveVariable(name, extension, arr)
