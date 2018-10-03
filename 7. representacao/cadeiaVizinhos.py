@@ -47,7 +47,9 @@ def chaincode(img):
 	save_path = os.path.join(path, "result_chaincode", img)
 	im = Image.open(os.path.join(path, img), "r")
 	imageArray = numpy.array(im, dtype=numpy.uint8)
-	imageArray = imageArray[:, :, 0]
+	#print(len(imageArray.shape))
+	if(len(imageArray.shape) == 3):
+		imageArray = imageArray[:, :, 0]
 	#print(imageArray[0])
 	width, height = im.size
 	newImageArray = numpy.zeros((height, width), dtype=numpy.uint8)
@@ -94,6 +96,25 @@ def chaincode(img):
 	os.makedirs(os.path.dirname(save_path), exist_ok=True)
 	Image.fromarray(newImageArray).save(save_path)
 
+def blackAndWhite(imgArray):
+	height, width = imgArray.shape
+	for yy in range(height):
+		for xx in range(width):
+			if(imgArray[yy, xx] < 128):
+				imgArray[yy, xx] = 0
+			else:
+				imgArray[yy, xx] = 255
+	return imgArray
+
+def invertColor(imgArray):
+	height, width = imgArray.shape
+	for yy in range(height):
+		for xx in range(width):
+			if(imgArray[yy, xx] < 128):
+				imgArray[yy, xx] = 255
+			else:
+				imgArray[yy, xx] = 0
+	return imgArray
 
 def skeleton(img):
 	path = "Images"
@@ -102,6 +123,7 @@ def skeleton(img):
 	save_path3 = os.path.join(path, "result_skeleton", "skeletonInverted_" + img)
 	im = Image.open(os.path.join(path, img), "r")
 	imageArray = numpy.array(im, dtype=numpy.uint8)
+	imageArray[imageArray > 0] = 1
 	print(imageArray[200, 200])
 	#imageArray = imageArray[:1, :1]
 	#print(imageArray)
@@ -198,9 +220,97 @@ def skeleton(img):
 	os.makedirs(os.path.dirname(save_path3), exist_ok=True)
 	Image.fromarray(skeletonArrayInverted).save(save_path3)
 
+def mpp(img, radius=16):
+	path = "Images"
+	save_path = os.path.join(path, "result_mpp", "elephant_radius=" + str(radius) + ".bmp")
+	im = Image.open(os.path.join(path, img), "r")
+	imageArray = numpy.array(im, dtype=numpy.uint8)
+	#print(imageArray)
+	width, height = im.size
+	#imageArray = invertColor(blackAndWhite(imageArray))
+	os.makedirs(os.path.dirname(save_path), exist_ok=True)
+	Image.fromarray(imageArray).save(save_path)
+	heightR = height//radius
+	widthR = width//radius
+	newImageArray = numpy.zeros((height, width), dtype=numpy.uint8)
+	print(imageArray[0, 16])
+	for yy in range(heightR):
+		distY = yy*radius
+		for xx in range(widthR):
+			distX = xx*radius
+			minDistance = 999
+			vertix = numpy.array([ [distY, distX], [distY, distX+radius], [distY+radius, distX+radius], [distY+radius, distX] ])
+			#print(vertix)
+			pointVertix = []
+			hasPoint = False
+			for yyy in range(radius):
+				for xxx in range(radius):
+					for v in range(4): # vertix
+						if(imageArray[distY+yyy, distX+xxx] > 0): #if it's a blackpoint inside that square
+							#print("Coordinates: y=" + str(distY+yyy) + " and x=" + str(distX+xxx))
+							#print(imageArray[distY+yyy, distX+xxx])
+							distance = abs(distY+yyy - vertix[v, 0]) + abs(distX+xxx - vertix[v, 1])
+							if(distance<minDistance):
+								hasPoint = True
+								minDistance = distance
+								pointVertix = vertix[v]
+			if(hasPoint):
+				#print(pointVertix)
+				newImageArray[pointVertix[0], pointVertix[1]] = 255
+	os.makedirs(os.path.dirname(save_path), exist_ok=True)
+	Image.fromarray(newImageArray).save(save_path)
+
+def momento(imgArray, p, q):
+	height, width = imgArray.shape
+	momPQ = 0
+	for xx in range(width):
+		for yy in range(height):
+			momPQ += (xx**p)*(yy**q)*int(imgArray[yy, xx])
+	return momPQ
+
+def momentoCentral(imgArray, p, q):
+	height, width = imgArray.shape
+	momCenPQ = 0
+	xBarra = momento(imgArray, 1, 0)/momento(imgArray, 0, 0)
+	yBarra = momento(imgArray, 0, 1)/momento(imgArray, 0, 0)
+	for xx in range(width):
+		for yy in range(height):
+			momCenPQ += ((xx - xBarra)**p)*((yy - yBarra)**q)*int(imgArray[yy, xx])
+	return momCenPQ
+
+def gama(p, q):
+	return ( ((p+q)/2) + 1 )
+
+def momentosInvariantes(img):
+	path = "Images"
+	im = Image.open(os.path.join(path, img), "r")
+	imageArray = numpy.array(im, dtype=numpy.uint8)
+	n20 = momentoCentral(imageArray, 2, 0)/(momentoCentral(imageArray, 0, 0) ** gama(2, 0))
+	n02 = momentoCentral(imageArray, 0, 2)/(momentoCentral(imageArray, 0, 0) ** gama(0, 2))
+	n30 = momentoCentral(imageArray, 3, 0)/(momentoCentral(imageArray, 0, 0) ** gama(3, 0))
+	n03 = momentoCentral(imageArray, 0, 3)/(momentoCentral(imageArray, 0, 0) ** gama(0, 3))
+	n12 = momentoCentral(imageArray, 1, 2)/(momentoCentral(imageArray, 0, 0) ** gama(1, 2))
+	n21 = momentoCentral(imageArray, 2, 1)/(momentoCentral(imageArray, 0, 0) ** gama(2, 1))
+	n11 = momentoCentral(imageArray, 1, 1)/(momentoCentral(imageArray, 0, 0) ** gama(1, 1))
+	
+	mi1 = n20 + n02
+	mi2 = (n20 - n02)**2 + 4*((n11)**2)
+	mi3 = (n30 - (3*n12))**2 + ((3*n21) - n03)**2
+	mi4 = (n30 + n12)**2 + (n21 - n03)**2
+	mi5 = (n30 - (3*n12))*(n30 + n12)*((n30+n12)**2 - 3*((n21+n03)**2)) + ((3*n21) - n03)*(n21 + n03)*(3*((n30 + n12)**2) - (n21 + n03)**2)
+	mi6 = (n20 - n02)*( ((n30+n12)**2) - (n21 + n03)**2 ) + 4*n11*(n30 + n12)*(n21 + n03)
+	mi7 = ((3*n21) - n03)*(n30 + n12)*(((n30 + n12)**2) - 3*((n21 + n03)**2)) + ((3*n12) - n30)*(n21 + n03)*(3*((n30 + n12)**2) - (n21 + n03)**2)
+	momInv = numpy.array([mi1, mi2, mi3, mi4, mi5, mi6, mi7])
+	numpy.savetxt("momentosInvariantes_" + img[:-4] + ".txt", momInv, delimiter=",")
+
+
 begin = time.time()
-#chaincode("Image_(1).bmp")
-skeleton("Image_(3).bmp")
+#chaincode("elephant.bmp")
+#skeleton("elephant.bmp")
+#mpp("elephant.bmp")
+momentosInvariantes("cham_(1).jpg")
+momentosInvariantes("cham_(2).jpg")
+momentosInvariantes("cham_(3).jpg")
 end = time.time()
 
 print("Finalizado: " + str(round(end-begin, 2)) + "s\n")
