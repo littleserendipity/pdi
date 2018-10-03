@@ -17,7 +17,7 @@ def eightNeighbours(img, pointC, yy, xx):
 		if(img[pointsToCheck[firstPoint, 0], pointsToCheck[firstPoint, 1]] == 255):
 			bPoint = [pointsToCheck[firstPoint, 0], pointsToCheck[firstPoint, 1]]
 			direction = eightPoints[firstPoint]
-			if(i > 0):
+			if(firstPoint > 0):
 				cPoint = [pointsToCheck[firstPoint-1, 0], pointsToCheck[firstPoint-1, 1]]
 			else:
 				cPoint = [pointsToCheck[7, 0], pointsToCheck[7, 1]]
@@ -304,13 +304,134 @@ def momentosInvariantes(img):
 	numpy.savetxt("momentosInvariantes_" + img[:-4] + ".txt", momInv, delimiter=",")
 
 
+def chainCode4(img):
+	path = "Images"
+	save_path = os.path.join(path, "result_chaincode4", img)
+	im = Image.open(os.path.join(path, img), "r")
+	imageArray = numpy.array(im, dtype=numpy.uint8)
+	#print(len(imageArray.shape))
+	if(len(imageArray.shape) == 3):
+		imageArray = imageArray[:, :, 0]
+	#print(imageArray[0])
+	width, height = im.size
+	newImageArray = numpy.zeros((height, width), dtype=numpy.uint8)
+	#encontrar ponto mais acima e a esquerda
+	found = False
+	chainFour = []
+	for yy in range(height):
+		for xx in range(width):
+			if(imageArray[yy, xx] == 255):
+				bZero = numpy.array([yy, xx])
+				cZero = numpy.array([yy, xx-1])
+				found = True
+				break
+		if(found):
+			break
+	#find bOne
+	bOne, cOne, direction = fourNeighbours(imageArray, cZero, bZero[0], bZero[1])
+	chainFour.append(direction)
+	b = bOne
+	c = cOne
+	number = 0
+	while(True):
+		nk, nkminusone, direction = fourNeighbours(imageArray, c, b[0], b[1])
+		if(numpy.array_equal(b,bZero) and numpy.array_equal(nk, bOne)):
+			break
+		chainFour.append(direction)
+		b = nk
+		c = nkminusone
+		number+=1
+		if(number >= 20000):
+			print("Loop infinito")
+			break
+	chainFour = numpy.array(chainFour)
+	chainNormalized = normalizeChain4(chainFour)
+	#print(chainEight)
+	#numpy.savetxt("chain.txt", chainFour, fmt="%d")
+	#numpy.savetxt("chainNormalized.txt", chainNormalized, fmt="%d")
+	#create the new image
+	point = bZero
+	#print("Chain Normalized Size: " + str(chainNormalized.size))
+	#print("First Point = " + str(point))
+	for i in range(chainFour.size):
+		#print("Point Before: " + str(point))
+		if(point[0] < height and point[1] < width and point[0] > 0 and point[1] > 0):
+			newImageArray[point[0], point[1]] = 255
+		point += getDirectionValue4(chainFour[i])
+		#print("Point After: " + str(point))
+	#return newImageArray
+	os.makedirs(os.path.dirname(save_path), exist_ok=True)
+	Image.fromarray(newImageArray).save(save_path)
+
+def fourNeighbours(img, pointC, yy, xx):
+	pointsToCheck = numpy.array([[yy, xx-1], [yy-1, xx], [yy, xx+1], [yy+1, xx]])
+	eightDirections = numpy.array([[yy, xx-1], [yy-1, xx-1], [yy-1, xx], [yy-1, xx+1], [yy, xx+1], [yy+1, xx+1], [yy+1, xx], [yy+1, xx-1]])
+	for i in range(8):
+		if numpy.array_equal(pointC, eightDirections[i]):
+			if(i == 0):
+				pointC = pointsToCheck[0]
+			elif(i == 1):
+				pointC = pointsToCheck[0]
+			elif(i == 2):
+				pointC = pointsToCheck[1]
+			elif(i == 3):
+				pointC = pointsToCheck[1]
+			elif(i == 4):
+				pointC = pointsToCheck[2]
+			elif(i == 5):
+				pointC = pointsToCheck[2]
+			elif(i == 6):
+				pointC = pointsToCheck[3]
+			elif(i == 7):
+				pointC = pointsToCheck[3]
+	pointC = numpy.array(pointC)
+	#print("x = " + str(xx) + ", y = " + str(yy))
+	fourPoints = numpy.array([2,1,0,3])
+	#print(pointC)
+	for i in range(4):
+		if numpy.array_equal(pointC, pointsToCheck[i]):
+			firstPoint = i+1
+			if(firstPoint > 3):
+				firstPoint = 0
+			break
+	for i in range(3):
+		#print(pointsToCheck[firstPoint])
+		if(img[pointsToCheck[firstPoint, 0], pointsToCheck[firstPoint, 1]] == 255):
+			bPoint = [pointsToCheck[firstPoint, 0], pointsToCheck[firstPoint, 1]]
+			direction = fourPoints[firstPoint]
+			if(firstPoint > 0):
+				cPoint = [pointsToCheck[firstPoint-1, 0], pointsToCheck[firstPoint-1, 1]]
+			else:
+				cPoint = [pointsToCheck[3, 0], pointsToCheck[3, 1]]
+			break
+		if(firstPoint < 3):
+			firstPoint+=1
+		else:
+			firstPoint = 0
+	return bPoint, cPoint, direction
+
+def getDirectionValue4(direction):
+	directions = numpy.array([[0, 1], [-1,0], [0, -1], [1,0]]) #0 1 2 3  [y,x]
+	return directions[direction]
+
+def normalizeChain4(chain):
+	chainNormalized = []
+	for i in range(chain.size-1):
+		if(i == 0):
+			valueNormalized = (chain[i] - chain[chain.size-1]) % 4
+		else:
+			valueNormalized = (chain[i+1] - chain[i]) % 4
+		chainNormalized.append(valueNormalized)
+	return numpy.array(chainNormalized)
+
 begin = time.time()
 #chaincode("elephant.bmp")
 #skeleton("elephant.bmp")
 #mpp("elephant.bmp")
-momentosInvariantes("cham_(1).jpg")
-momentosInvariantes("cham_(2).jpg")
-momentosInvariantes("cham_(3).jpg")
+# momentosInvariantes("cham_(1).jpg")
+# momentosInvariantes("cham_(2).jpg")
+# momentosInvariantes("cham_(3).jpg")
+chainCode4("Image_(1).bmp")
 end = time.time()
 
 print("Finalizado: " + str(round(end-begin, 2)) + "s\n")
