@@ -300,9 +300,94 @@ def momentosInvariantes(img):
 	mi5 = (n30 - (3*n12))*(n30 + n12)*((n30+n12)**2 - 3*((n21+n03)**2)) + ((3*n21) - n03)*(n21 + n03)*(3*((n30 + n12)**2) - (n21 + n03)**2)
 	mi6 = (n20 - n02)*( ((n30+n12)**2) - (n21 + n03)**2 ) + 4*n11*(n30 + n12)*(n21 + n03)
 	mi7 = ((3*n21) - n03)*(n30 + n12)*(((n30 + n12)**2) - 3*((n21 + n03)**2)) + ((3*n12) - n30)*(n21 + n03)*(3*((n30 + n12)**2) - (n21 + n03)**2)
-	momInv = numpy.array([mi1, mi2, mi3, mi4, mi5, mi6, mi7])
+	#mediaABS = (abs(mi1) + abs(mi2) + abs(mi3) + abs(mi4) + abs(mi5) + abs(mi6) + abs(mi7))/7
+	media = (mi1 + mi2 + mi3 + mi4 + mi5 + mi6 + mi7)/7
+	momInv = numpy.array([mi1, mi2, mi3, mi4, mi5, mi6, mi7, media])
 	numpy.savetxt("momentosInvariantes_" + img[:-4] + ".txt", momInv, delimiter=",")
+	return media
 
+def classification():
+	#groupDogs = numpy.array([momentosInvariantes("dog_(1).jpg"), momentosInvariantes("dog_(2).jpg"), momentosInvariantes("dog_(3).jpg")])
+	#groupCats = numpy.array([momentosInvariantes("cat_(1).jpg"), momentosInvariantes("cat_(2).jpg"), momentosInvariantes("cat_(3).jpg")])
+	#groupChams = numpy.array([momentosInvariantes("cham_(1).jpg"), momentosInvariantes("cham_(2).jpg"), momentosInvariantes("cham_(3).jpg")])
+	dogsMedia = (momentosInvariantes("dog_(1).jpg") + momentosInvariantes("dog_(2).jpg") + momentosInvariantes("dog_(3).jpg"))/3
+	catsMedia = (momentosInvariantes("cat_(1).jpg") + momentosInvariantes("cat_(2).jpg") + momentosInvariantes("cat_(3).jpg"))/3
+	chamsMedia = (momentosInvariantes("cham_(1).jpg") + momentosInvariantes("cham_(2).jpg") + momentosInvariantes("cham_(3).jpg"))/3
+
+	firstImage = momentosInvariantes("teste_(1).jpg")
+	secondImage = momentosInvariantes("teste_(2).jpg")
+	thirdImage = momentosInvariantes("teste_(3).jpg")
+
+	distMaxFirst = 1000
+	distMaxSecond = 1000
+	distMaxThird = 1000
+	textFirst = ""
+	textSecond = ""
+	textThird = ""
+	if(abs(firstImage - dogsMedia) < distMaxFirst):
+		textFirst = "dog"
+		distMaxFirst = abs(firstImage - dogsMedia)
+	if(abs(firstImage - catsMedia) < distMaxFirst):
+		textFirst = "cat"
+		distMaxFirst = abs(firstImage - catsMedia)
+	if(abs(firstImage - chamsMedia) < distMaxFirst):
+		textFirst = "cham"
+		distMaxFirst = abs(firstImage - chamsMedia)
+
+	if(abs(secondImage - dogsMedia) < distMaxSecond):
+		textSecond = "dog"
+		distMaxSecond = abs(secondImage - dogsMedia)
+	if(abs(secondImage - catsMedia) < distMaxSecond):
+		textSecond = "cat"
+		distMaxSecond = abs(secondImage - catsMedia)
+	if(abs(secondImage - chamsMedia) < distMaxSecond):
+		textSecond = "cham"
+		distMaxSecond = abs(secondImage - chamsMedia)
+
+	if(abs(thirdImage - dogsMedia) < distMaxThird):
+		textThird = "dog"
+		distMaxThird = abs(thirdImage - dogsMedia)
+	if(abs(thirdImage - catsMedia) < distMaxThird):
+		textThird = "cat"
+		distMaxThird = abs(thirdImage - catsMedia)
+	if(abs(thirdImage - chamsMedia) < distMaxThird):
+		textThird = "cham"
+		distMaxThird = abs(thirdImage - chamsMedia)
+	# for i in range(3):
+		# if(abs(firstImage - groupDogs[i]) < distMaxFirst):
+		# 	textFirst = "dog"
+		# 	distMaxFirst = abs(firstImage - groupDogs[i])
+		# if(abs(firstImage - groupCats[i]) < distMaxFirst):
+		# 	textFirst = "cat"
+		# 	distMaxFirst = abs(firstImage - groupCats[i])
+		# if(abs(firstImage - groupChams[i]) < distMaxFirst):
+		# 	textFirst = "cham"
+		# 	distMaxFirst = abs(firstImage - groupChams[i])
+
+		# if(abs(secondImage - groupDogs[i]) < distMaxSecond):
+		# 	textSecond = "dog"
+		# 	distMaxSecond = abs(secondImage - groupDogs[i])
+		# if(abs(secondImage - groupCats[i]) < distMaxSecond):
+		# 	textSecond = "cat"
+		# 	distMaxSecond = abs(secondImage - groupCats[i])
+		# if(abs(secondImage - groupChams[i]) < distMaxSecond):
+		# 	textSecond = "cham"
+		# 	distMaxSecond = abs(secondImage - groupChams[i])
+
+		# if(abs(thirdImage - groupDogs[i]) < distMaxThird):
+		# 	textThird = "dog"
+		# 	distMaxThird = abs(thirdImage - groupDogs[i])
+		# if(abs(thirdImage - groupCats[i]) < distMaxThird):
+		# 	textThird = "cat"
+		# 	distMaxThird = abs(thirdImage - groupCats[i])
+		# if(abs(thirdImage - groupChams[i]) < distMaxThird):
+		# 	textThird = "cham"
+		# 	distMaxThird = abs(thirdImage - groupChams[i])
+	
+	stringToSave = "First Test Image is a " + str(textFirst) + "\nSecond Test Image is a " + str(textSecond) + "\nThird Test Image is a " + str(textThird)
+	txt = open("classification.txt", "w")
+	txt.write(stringToSave)
+	txt.close()
 
 def chainCode4(img):
 	path = "Images"
@@ -431,7 +516,8 @@ begin = time.time()
 # momentosInvariantes("cham_(1).jpg")
 # momentosInvariantes("cham_(2).jpg")
 # momentosInvariantes("cham_(3).jpg")
-chainCode4("Image_(1).bmp")
+#chainCode4("Image_(1).bmp")
+classification()
 end = time.time()
 
 print("Finalizado: " + str(round(end-begin, 2)) + "s\n")
