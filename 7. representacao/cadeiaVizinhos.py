@@ -80,8 +80,8 @@ def chaincode(img):
 	chainEight = numpy.array(chainEight)
 	chainNormalized = normalizeChain(chainEight)
 	#print(chainEight)
-	numpy.savetxt("chain.txt", chainEight, fmt="%d")
-	numpy.savetxt("chainNormalized.txt", chainNormalized, fmt="%d")
+	numpy.savetxt("chain8.txt", chainEight, fmt="%d", newline="")
+	numpy.savetxt("chainNormalized8.txt", chainNormalized, fmt="%d", newline="")
 	#create the new image
 	point = bZero
 	print("Chain Normalized Size: " + str(chainNormalized.size))
@@ -432,8 +432,8 @@ def chainCode4(img):
 	chainFour = numpy.array(chainFour)
 	chainNormalized = normalizeChain4(chainFour)
 	#print(chainEight)
-	#numpy.savetxt("chain.txt", chainFour, fmt="%d")
-	#numpy.savetxt("chainNormalized.txt", chainNormalized, fmt="%d")
+	numpy.savetxt("chain4.txt", chainFour, fmt="%d", newline='')
+	numpy.savetxt("chainNormalized4.txt", chainNormalized,fmt="%d", newline='')
 	#create the new image
 	point = bZero
 	#print("Chain Normalized Size: " + str(chainNormalized.size))
@@ -510,7 +510,8 @@ def normalizeChain4(chain):
 	return numpy.array(chainNormalized)
 
 begin = time.time()
-#chaincode("elephant.bmp")
+chainCode4("Image_(1).bmp")
+#chainCode4("elephant.bmp")
 #skeleton("elephant.bmp")
 #mpp("elephant.bmp")
 # momentosInvariantes("cham_(1).jpg")
