@@ -1,50 +1,113 @@
 import Image as im
 import numpy as np
-import queue
+import heapq
 
-class Huffman(object):
+class Huffman:
+    def __init__(self):
+        self.image = None
+        self.path = None
+        self.histogram = None
+        self.output_path_compress = None
+        self.heap = []
+        self.codes = {}
+        self.reverse_mapping = {}
 
-    def __init__(self, image):
+    def load(self, image):
         self.image = image
-        self.pathSave = image.path.getPathSave(image.name)
-        self.extension_compress = "_compressed.bin"
+        self.path = self.image.path.getPathSave(self.image.name)
         self.histogram = im.Histogram().getValues(self.image.arr)
+        self.output_path_compress = self.path + "_huffman_compress.bin"
 
-        self.m, self.n = image.shapes
-        self.root_node = None
-        self.input_binary = None
-        self.bitstream = None
-        self.count = 0
+    def saveCodes(self):
+        f = open((self.path + "_huffman_codes.txt"),'w')
+        for x in range(len(self.codes)):
+            f.write(str(x) + ' ' + str(self.codes[x]) + '\n')
 
-    def compress(self):
-        self.bitstream = ['0'] * len(self.histogram)
-        probabilities = self.histogram/np.sum(self.histogram)
+    ### functions for compression
+    def compress(self, image):
+        self.load(image)
 
-        self.root_node = self.tree(probabilities)
-        self.makeTrail(self.root_node, np.ones([64], dtype=int))
-        
-        self.saveDictionary(self.bitstream)
-        self.saveBytes(self.bitstream)
+        with open(self.output_path_compress, 'wb') as output:
+            vector = self.image.arr.ravel()
 
-        start_bits = self.m * self.n * 8
-        end_bits = len(self.input_binary)
+            self.makeHeap(self.histogram)
+            self.mergeNodes()
+
+            self.makeCodes()
+            self.saveCodes()
+
+            encoded = self.getEncoded(vector)
+            padded_encoded = self.padEncoded(encoded)
+
+            b = self.getByteArray(padded_encoded)
+            output.write(bytes(b))
+
+        print('Imagem comprimida..')
+        start_bits = self.image.shapes[0] * self.image.shapes[1] * 8
+        end_bits = len(padded_encoded)
 
         compression = end_bits/start_bits
         redundancy = 1 - (1/(start_bits/end_bits))
 
         print('Grau de compressão:', compression)
-        print('Redundância relativa:', redundancy)
-        
-    def decompress(self):
-        binary = self.readBytes()
+        print('Redundância relativa:', redundancy, '\n')
+        return self.output_path_compress
 
-        print(self.root_node)
-        print(len(binary))
+    def makeHeap(self, histogram):
+        for (i, histogram) in enumerate(histogram):
+            node = HeapNode(i, histogram)
+            heapq.heappush(self.heap, node)
 
+    def mergeNodes(self):
+        while(len(self.heap) > 1):
+            node1 = heapq.heappop(self.heap)
+            node2 = heapq.heappop(self.heap)
+            merged = HeapNode(None, node1.freq + node2.freq)
+            merged.left = node1
+            merged.right = node2
+            heapq.heappush(self.heap, merged)
 
-    def readBytes(self):
-        input_path = self.pathSave + self.extension_compress
+    def makeCodes(self):
+        root = heapq.heappop(self.heap)
+        current_code = ""
+        self.makeCodesHelper(root, current_code)
 
+    def makeCodesHelper(self, root, current_code):
+        if(root == None):
+            return
+        if(root.char != None):
+            self.codes[root.char] = current_code
+            self.reverse_mapping[current_code] = root.char
+            return
+
+        self.makeCodesHelper(root.left, current_code + "0")
+        self.makeCodesHelper(root.right, current_code + "1")
+
+    def getEncoded(self, vector):
+        encoded = ""
+        for index in vector:
+            encoded += self.codes[index]
+        return encoded
+
+    def padEncoded(self, encoded):
+        extra_padding = 8 - len(encoded) % 8
+        for _ in range(extra_padding):
+            encoded += "0"
+        padded_info = "{0:08b}".format(extra_padding)
+        encoded = padded_info + encoded
+        return encoded
+
+    def getByteArray(self, padded_encoded):
+        b = bytearray()
+        if(len(padded_encoded) % 8 != 0):
+            exit(0)
+        for i in range(0, len(padded_encoded), 8):
+            byte = padded_encoded[i:i+8]
+            b.append(int(byte, 2))
+        return b
+
+    ### functions for decompression
+    def decompress(self, input_path):
         with open(input_path, 'rb') as file:
             bit_string = ""
             byte = file.read(1)
@@ -55,90 +118,44 @@ class Huffman(object):
                 bit_string += bits
                 byte = file.read(1)
 
-            encoded_text = self.removePadding(bit_string)
-            return encoded_text
+            encoded = self.removePadding(bit_string)
+            decompressed = self.decode(encoded)
+            matrix = np.reshape(decompressed, self.image.shapes)
 
-    def saveBytes(self, bitstream):
-        output_path = (self.pathSave + self.extension_compress)
-        b = bytearray()
-        binary = ''
+            self.image.setImg(matrix)
+            self.image.save(extension="huffman")
 
-        for y in range(self.m):
-            for x in range(self.n):
-                binary += bitstream[self.image.arr[y,x]]
+        print('Imagem descomprimida..')
 
-        self.input_binary = binary
-        binary = self.addPadding(binary)
-
-        with open(output_path, 'wb') as output:
-            for i in range(0, len(binary), 8):
-                b.append(int(binary[i:i+8], 2))
-            output.write(bytes(b))
-
-    def addPadding(self, binary):
-        extra_padding = 8 - len(binary) % 8
-        for _ in range(extra_padding):
-            binary += "0"
-        padded_info = "{0:08b}".format(extra_padding)
-        binary = padded_info + binary
-        return binary
-
-    def removePadding(self, binary):
-        padded_info = binary[:8]
+    def removePadding(self, padded_encoded):
+        padded_info = padded_encoded[:8]
         extra_padding = int(padded_info, 2)
-        binary = binary[8:] 
-        encoded_text = binary[:-1*extra_padding]
-        return encoded_text
+        padded_encoded = padded_encoded[8:] 
+        encoded = padded_encoded[:-1*extra_padding]
+        return encoded
 
-    def saveDictionary(self, bitstream):
-        f = open((self.pathSave + "_dictionary.txt"),'w')
-        for (index, element) in enumerate(bitstream):
-            f.write(str(index) + ' ' + element + '\n')
+    def decode(self, encoded):
+        current_code = ""
+        decoded = []
+        for bit in encoded:
+            current_code += bit
+            if(current_code in self.reverse_mapping):
+                decoded.append(self.reverse_mapping[current_code])
+                current_code = ""
+        return decoded
 
-    def makeTrail(self, root_node, tmp_array):
-        if (root_node.left is not None):
-            tmp_array[self.count] = 0
-            self.count+=1
-            self.makeTrail(root_node.left, tmp_array)
-            self.count-=1
-        if (root_node.right is not None):
-            tmp_array[self.count] = 1
-            self.count+=1
-            self.makeTrail(root_node.right, tmp_array)
-            self.count-=1
-        else:
-            binary = ''.join(str(cell) for cell in tmp_array[1:self.count])
-            self.bitstream[root_node.data] = binary
 
-    def tree(self, probabilities):
-        prq = queue.PriorityQueue()
-        for (color, probability) in enumerate(probabilities): 
-            leaf = Node() 
-            leaf.data = color
-            leaf.prob = probability
-            prq.put(leaf)
-        
-        while (prq.qsize() > 1):
-            newnode = Node() 
-            l = prq.get() 
-            r = prq.get()
-            newnode.left = l 
-            newnode.right = r 
-            newprob = l.prob + r.prob
-            newnode.prob = newprob
-            prq.put(newnode) 
-        return prq.get()
+class HeapNode:
+    def __init__(self, char, freq):
+        self.char = char
+        self.freq = freq
+        self.left = None
+        self.right = None
 
-class Node:
-	def __init__(self):
-		self.prob = None
-		self.code = None
-		self.data = None
-		self.left = None
-		self.right = None
+    def __lt__(self, other):
+        return self.freq < other.freq
 
-	def __lt__(self, other):
-		return 1 if (self.prob < other.prob) else 0
-
-	def __ge__(self, other):
-		return 1 if (self.prob > other.prob) else 0
+    def __eq__(self, other):
+        if (other == None or not isinstance(other, HeapNode)):
+            return False
+        return self.freq == other.freq

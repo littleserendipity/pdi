@@ -3,10 +3,12 @@ import Compress as cm
 
 def main():
     
+    huffman = cm.Huffman()
+
     ### questão 1
-    img1 = cm.Huffman(im.Image("Image_(1).tif"))
-    img1.compress()
-    img1.decompress()
+    img1 = im.Image("Image_(3).tif")
+    compress = huffman.compress(img1)
+    huffman.decompress(compress)
 
 
 if __name__ == '__main__':
