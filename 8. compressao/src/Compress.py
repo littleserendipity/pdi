@@ -1,6 +1,38 @@
 import Image as im
 import numpy as np
 import heapq
+import pickle
+
+class LZW:
+    def __init__(self):
+        self.image = None
+        self.path = None
+        self.output_path_compress = None
+        self.dictionary = None
+
+    def load(self, image):
+        self.image = image
+        self.path = self.image.path.getPathSave(self.image.name)
+        self.output_path_compress = self.path + "_lzw_compress.dat"
+        self.dictionary = dict((chr(c), c) for c in range(256))
+
+    def compress(self, image):
+        self.load(image)
+
+        # self.image.setImg(np.array([[1,2,3],[3,4,5],[6,7,8],[6,7,8]]))
+
+        vector = self.image.arr.ravel()
+
+        print(self.dictionary)
+
+
+        # with open(self.output_path_compress, 'wb') as f:
+        #     pickle.dump(result, f, pickle.HIGHEST_PROTOCOL)
+        #     f.close()
+
+        print("Imagem comprimida...")
+
+        return self.output_path_compress
 
 class Huffman:
     def __init__(self):
@@ -16,14 +48,13 @@ class Huffman:
         self.image = image
         self.path = self.image.path.getPathSave(self.image.name)
         self.histogram = im.Histogram().getValues(self.image.arr)
-        self.output_path_compress = self.path + "_huffman_compress.bin"
+        self.output_path_compress = self.path + "_huffman_compress.dat"
 
     def saveCodes(self):
         f = open((self.path + "_huffman_codes.txt"),'w')
         for x in range(len(self.codes)):
             f.write(str(x) + ' ' + str(self.codes[x]) + '\n')
 
-    ### functions for compression
     def compress(self, image):
         self.load(image)
 
@@ -41,8 +72,9 @@ class Huffman:
 
             b = self.getByteArray(padded_encoded)
             output.write(bytes(b))
+            output.close()
 
-        print('Imagem comprimida..')
+        print('Imagem comprimida...')
         start_bits = self.image.shapes[0] * self.image.shapes[1] * 8
         end_bits = len(padded_encoded)
 
@@ -79,7 +111,6 @@ class Huffman:
             self.codes[root.char] = current_code
             self.reverse_mapping[current_code] = root.char
             return
-
         self.makeCodesHelper(root.left, current_code + "0")
         self.makeCodesHelper(root.right, current_code + "1")
 
@@ -106,7 +137,6 @@ class Huffman:
             b.append(int(byte, 2))
         return b
 
-    ### functions for decompression
     def decompress(self, input_path):
         with open(input_path, 'rb') as file:
             bit_string = ""
@@ -124,8 +154,9 @@ class Huffman:
 
             self.image.setImg(matrix)
             self.image.save(extension="huffman")
+            file.close()
 
-        print('Imagem descomprimida..')
+        print('Imagem descomprimida...')
 
     def removePadding(self, padded_encoded):
         padded_info = padded_encoded[:8]
