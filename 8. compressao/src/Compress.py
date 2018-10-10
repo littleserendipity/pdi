@@ -32,7 +32,7 @@ class LZW:
 
         print('Imagem comprimida...')
         start_bits = self.image.shapes[0] * self.image.shapes[1] * 8
-        end_bits = len(output) * 8
+        end_bits = np.sum([item.bit_length() for i, item in enumerate(output)])
 
         compression = start_bits/end_bits
         redundancy = 1 - (1/compression)
