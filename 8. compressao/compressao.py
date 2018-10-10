@@ -1,4 +1,5 @@
 from PIL import Image
+from pathlib import Path
 import numpy
 import math
 import time
@@ -6,14 +7,10 @@ import os
 
 
 def RLEDecode(rleArray):
-	#print(rleArray)
 	size = rleArray.size
-	#print(size)
 	arrayLine = []
 	arrayTotal = []
 	value = True # start as white
-	x = 0
-	#print(rleArray[0])
 	for i in range(size):
 		if(rleArray[i] < 255): # 255 = new line
 			for v in range(rleArray[i]):
@@ -24,17 +21,12 @@ def RLEDecode(rleArray):
 			arrayLine = []
 			value = not value
 	arrayTotal.append((arrayLine)) # last line doesn't have a 255 on the end
-	# print(len(arrayTotal[0]))
-	# print(len(arrayTotal))
 	width = len(arrayTotal[0])
 	height = len(arrayTotal)
 	newArray = numpy.zeros((height, width), dtype=numpy.uint8)
 	for yy in range(height):
 		for xx in range(width):
 			newArray[yy, xx] = int(arrayTotal[yy][xx])
-
-	# print(newArray)
-	# print(rleArray)
 	return newArray
 
 
@@ -62,29 +54,16 @@ def RLE(binArray):
 			arrayCount.append(255) #new line
 			count = 0
 	arrayCount = numpy.array(arrayCount, dtype = numpy.uint8)
-	#print(arrayCount)
 	return arrayCount
 
 def binaryBitplan(img):
-	path = "Images"
-	# save_path7 = os.path.join(path, "result_binaryBitplan", "g7_" + img[:-4] + ".png")
-	# save_path6 = os.path.join(path, "result_binaryBitplan", "g6_" + img[:-4] + ".png")
-	# save_path5 = os.path.join(path, "result_binaryBitplan", "g5_" + img[:-4] + ".png")
-	# save_path4 = os.path.join(path, "result_binaryBitplan", "g4_" + img[:-4] + ".png")
-	# save_path3 = os.path.join(path, "result_binaryBitplan", "g3_" + img[:-4] + ".png")
-	# save_path2 = os.path.join(path, "result_binaryBitplan", "g2_" + img[:-4] + ".png")
-	# save_path1 = os.path.join(path, "result_binaryBitplan", "g1_" + img[:-4] + ".png")
-	# save_path0 = os.path.join(path, "result_binaryBitplan", "g0_" + img[:-4] + ".png")
-	# save_path = os.path.join(path, "result_binaryBitplan", "resultA7toA2_" + img[:-4] + ".png")
-	# save_path2 = os.path.join(path, "result_binaryBitplan", "resultG7toG2_" + img[:-4] + ".png")
+	path = "data"
+	filesPath = Path("out/files/" + img[:-4] + "/")
 	im = Image.open(os.path.join(path, img), "r")
 	imageArray = numpy.array(im, dtype=numpy.uint8)
-	#print(len(imageArray.shape))
 	if(len(imageArray.shape) == 3):
 		imageArray = imageArray[:, :, 0]
-	#print(imageArray[0])
 	width, height = im.size
-	#newImageArray = numpy.zeros((height, width), dtype=numpy.uint8)
 	a7 = numpy.zeros((height, width), dtype=numpy.bool)
 	a6 = numpy.zeros((height, width), dtype=numpy.bool)
 	a5 = numpy.zeros((height, width), dtype=numpy.bool)
@@ -104,7 +83,6 @@ def binaryBitplan(img):
 	for yy in range(height):
 		for xx in range(width):
 			valueBin = bin(imageArray[yy, xx])[2:].zfill(8)
-			#print(valueBin)
 			a0[yy, xx] = bool(int(valueBin[7]))
 			a1[yy, xx] = bool(int(valueBin[6]))
 			a2[yy, xx] = bool(int(valueBin[5]))
@@ -122,14 +100,6 @@ def binaryBitplan(img):
 			g2[yy, xx] = XOR(a2[yy, xx], a3[yy, xx])
 			g1[yy, xx] = XOR(a1[yy, xx], a2[yy, xx])
 			g0[yy, xx] = XOR(a0[yy, xx], a1[yy, xx])
-	# g0RLE = RLE(g0)
-	# g1RLE = RLE(g1)
-	# g2RLE = RLE(g2)
-	# g3RLE = RLE(g3)
-	# g4RLE = RLE(g4)
-	# g5RLE = RLE(g5)
-	# g6RLE = RLE(g6)
-	# g7RLE = RLE(g7)
 
 	a0RLE = RLE(a0)
 	a1RLE = RLE(a1)
@@ -150,132 +120,133 @@ def binaryBitplan(img):
 	g7RLE = RLE(g7)
 	
 
-	# print(g7)
-	# print(g7RLE)
-	# g0 = numpy.packbits(g0, axis=None)
-	# g1 = numpy.packbits(g1, axis=None)
-	# g2 = numpy.packbits(g2, axis=None)
-	# g3 = numpy.packbits(g3, axis=None)
-	# g4 = numpy.packbits(g4, axis=None)
-	# g5 = numpy.packbits(g5, axis=None)
-	# g6 = numpy.packbits(g6, axis=None)
-	# g7 = numpy.packbits(g7, axis=None)
-	#print(len(g0.tostring()))
+	os.makedirs(filesPath, exist_ok=True)
+	numpy.save(filesPath / "g0.npy", g0)
+	numpy.save(filesPath / "g0RLE.npy", g0RLE)
+	numpy.save(filesPath / "g1.npy", g1)
+	numpy.save(filesPath / "g1RLE.npy", g1RLE)
+	numpy.save(filesPath / "g2.npy", g2)
+	numpy.save(filesPath / "g2RLE.npy", g2RLE)
+	numpy.save(filesPath / "g3.npy", g3)
+	numpy.save(filesPath / "g3RLE.npy", g3RLE)
+	numpy.save(filesPath / "g4.npy", g4)
+	numpy.save(filesPath / "g4RLE.npy", g4RLE)
+	numpy.save(filesPath / "g5.npy", g5)
+	numpy.save(filesPath / "g5RLE.npy", g5RLE)
+	numpy.save(filesPath / "g6.npy", g6)
+	numpy.save(filesPath / "g6RLE.npy", g6RLE)
+	numpy.save(filesPath / "g7.npy", g7)
+	numpy.save(filesPath / "g7RLE.npy", g7RLE)
 
-	# numpy.save("image.npy", imageArray)
-	numpy.save("g0.npy", g0)
-	numpy.save("g0RLE.npy", g0RLE)
-	numpy.save("g1.npy", g1)
-	numpy.save("g1RLE.npy", g1RLE)
-	numpy.save("g2.npy", g2)
-	numpy.save("g2RLE.npy", g2RLE)
-	numpy.save("g3.npy", g3)
-	numpy.save("g3RLE.npy", g3RLE)
-	numpy.save("g4.npy", g4)
-	numpy.save("g4RLE.npy", g4RLE)
-	numpy.save("g5.npy", g5)
-	numpy.save("g5RLE.npy", g5RLE)
-	numpy.save("g6.npy", g6)
-	numpy.save("g6RLE.npy", g6RLE)
-	numpy.save("g7.npy", g7)
-	#numpy.savetxt("g7.txt", g7)
-	numpy.save("g7RLE.npy", g7RLE)
-	#numpy.savetxt("g7RLE.txt", g7RLE)
+	numpy.save(filesPath / "a0.npy", a0)
+	numpy.save(filesPath / "a0RLE.npy", a0RLE)
+	numpy.save(filesPath / "a1.npy", a1)
+	numpy.save(filesPath / "a1RLE.npy", a1RLE)
+	numpy.save(filesPath / "a2.npy", a2)
+	numpy.save(filesPath / "a2RLE.npy", a2RLE)
+	numpy.save(filesPath / "a3.npy", a3)
+	numpy.save(filesPath / "a3RLE.npy", a3RLE)
+	numpy.save(filesPath / "a4.npy", a4)
+	numpy.save(filesPath / "a4RLE.npy", a4RLE)
+	numpy.save(filesPath / "a5.npy", a5)
+	numpy.save(filesPath / "a5RLE.npy", a5RLE)
+	numpy.save(filesPath / "a6.npy", a6)
+	numpy.save(filesPath / "a6RLE.npy", a6RLE)
+	numpy.save(filesPath / "a7.npy", a7)
+	numpy.save(filesPath / "a7RLE.npy", a7RLE)
 
-	numpy.save("a0.npy", a0)
-	numpy.save("a0RLE.npy", a0RLE)
-	numpy.save("a1.npy", a1)
-	numpy.save("a1RLE.npy", a1RLE)
-	numpy.save("a2.npy", a2)
-	numpy.save("a2RLE.npy", a2RLE)
-	numpy.save("a3.npy", a3)
-	numpy.save("a3RLE.npy", a3RLE)
-	numpy.save("a4.npy", a4)
-	numpy.save("a4RLE.npy", a4RLE)
-	numpy.save("a5.npy", a5)
-	numpy.save("a5RLE.npy", a5RLE)
-	numpy.save("a6.npy", a6)
-	numpy.save("a6RLE.npy", a6RLE)
-	numpy.save("a7.npy", a7)
-	numpy.save("a7RLE.npy", a7RLE)
-	#numpy.savetxt("a7.txt", a7, fmt="%d", newline=",")
-	#numpy.savetxt("a7RLE.txt", a7RLE, fmt="%d", newline=",")
-	# g0[g0 > 0] = 255
-	# g1[g1 > 0] = 255
-	# g2[g2 > 0] = 255
-	# g3[g3 > 0] = 255
-	# g4[g4 > 0] = 255
-	# g5[g5 > 0] = 255
-	# g6[g6 > 0] = 255
-	# g7[g7 > 0] = 255
-	# for yy in range(height):
-	# 	for xx in range(width):
-	# 		newImageArray[yy, xx] = (a7[yy, xx] * 128) + (a6[yy, xx] * 64) + (a5[yy, xx] * 32) + (a4[yy,xx] * 16) + (a3[yy, xx] * 8) + (a2[yy, xx] * 4)
-	# os.makedirs(os.path.dirname(save_path), exist_ok=True)
-	# Image.fromarray(newImageArray).save(save_path)
-
-	# newImageArray2 = decodeGrayCode(height, width, g7, g6, g5, g4, g3, g2, g1, g0)
-
-	# os.makedirs(os.path.dirname(save_path2), exist_ok=True)
-	# Image.fromarray(newImageArray2).save(save_path2)
-	# os.makedirs(os.path.dirname(save_path0), exist_ok=True)
-	# Image.fromarray(g0).save(save_path0)
-
-	# os.makedirs(os.path.dirname(save_path1), exist_ok=True)
-	# Image.fromarray(g1).save(save_path1)
-
-	# os.makedirs(os.path.dirname(save_path2), exist_ok=True)
-	# Image.fromarray(g2).save(save_path2)
-
-	# os.makedirs(os.path.dirname(save_path3), exist_ok=True)
-	# Image.fromarray(g3).save(save_path3)
-
-	# os.makedirs(os.path.dirname(save_path4), exist_ok=True)
-	# Image.fromarray(g4).save(save_path4)
-
-	# os.makedirs(os.path.dirname(save_path5), exist_ok=True)
-	# Image.fromarray(g5).save(save_path5)
-
-	# os.makedirs(os.path.dirname(save_path6), exist_ok=True)
-	# Image.fromarray(g6).save(save_path6)
-
-	# os.makedirs(os.path.dirname(save_path7), exist_ok=True)
-	# Image.fromarray(g7).save(save_path7)
-
-def decodeImageBinary(name, decode):
-	path = "Images"
+def decodeImageBinary(imgName, decode=True):
+	filesPath = Path("out/files/" + imgName + "/")
+	savePath = Path("out/resultBinary/" + imgName + "/")
 	if(decode):
-		a7 = RLEDecode(numpy.load("a7RLE.npy"))
-		print(a7[1])
-		a7Normal = numpy.load("a7.npy")
-		print(a7Normal[1])
-		a6 = RLEDecode(numpy.load("a6RLE.npy"))
-		a5 = RLEDecode(numpy.load("a5RLE.npy"))
-		a4 = RLEDecode(numpy.load("a4RLE.npy"))
-		a3 = RLEDecode(numpy.load("a3RLE.npy"))
-		a2 = RLEDecode(numpy.load("a2RLE.npy"))
-		a1 = RLEDecode(numpy.load("a1RLE.npy"))
-		a0 = RLEDecode(numpy.load("a0RLE.npy"))
+		a7 = RLEDecode(numpy.load(filesPath / "a7RLE.npy"))
+		a6 = RLEDecode(numpy.load(filesPath / "a6RLE.npy"))
+		a5 = RLEDecode(numpy.load(filesPath / "a5RLE.npy"))
+		a4 = RLEDecode(numpy.load(filesPath / "a4RLE.npy"))
+		a3 = RLEDecode(numpy.load(filesPath / "a3RLE.npy"))
+		a2 = RLEDecode(numpy.load(filesPath / "a2RLE.npy"))
+		a1 = RLEDecode(numpy.load(filesPath / "a1RLE.npy"))
+		a0 = RLEDecode(numpy.load(filesPath / "a0RLE.npy"))
 	else:
-		a7 = numpy.load("a7.npy")
-		a6 = numpy.load("a6.npy")
-		a5 = numpy.load("a5.npy")
-		a4 = numpy.load("a4.npy")
-		a3 = numpy.load("a3.npy")
-		a2 = numpy.load("a2.npy")
-		a1 = numpy.load("a1.npy")
-		a0 = numpy.load("a0.npy")
+		a7 = numpy.load(filesPath / "a7.npy")
+		a6 = numpy.load(filesPath / "a6.npy")
+		a5 = numpy.load(filesPath / "a5.npy")
+		a4 = numpy.load(filesPath / "a4.npy")
+		a3 = numpy.load(filesPath / "a3.npy")
+		a2 = numpy.load(filesPath / "a2.npy")
+		a1 = numpy.load(filesPath / "a1.npy")
+		a0 = numpy.load(filesPath / "a0.npy")
 	height, width = a7.shape
 	newImageArray = numpy.zeros((height, width), dtype=numpy.uint8)
-	save_path = os.path.join(path, name + ".png")
+	save_path = os.path.join(savePath, imgName + "_without3Bits.png")
 	for yy in range(height):
 		for xx in range(width):
-			newImageArray[yy, xx] = (a7[yy, xx] * 128) + (a6[yy, xx] * 64) + (a5[yy, xx] * 32) + (a4[yy,xx] * 16) + (a3[yy, xx] * 8) + (a2[yy, xx] * 4) + (a1[yy, xx] * 2) + (a0[yy, xx])
+			newImageArray[yy, xx] = (a7[yy, xx] * 128) + (a6[yy, xx] * 64) + (a5[yy, xx] * 32) + (a4[yy,xx] * 16) + (a3[yy, xx] * 8) # + (a2[yy, xx] * 4) + (a1[yy, xx] * 2) + (a0[yy, xx])
 	os.makedirs(os.path.dirname(save_path), exist_ok=True)
 	Image.fromarray(newImageArray).save(save_path)
 
+	a0[a0 > 0] = 255
+	a1[a1 > 0] = 255
+	a2[a2 > 0] = 255
+	a3[a3 > 0] = 255
+	a4[a4 > 0] = 255
+	a5[a5 > 0] = 255
+	a6[a6 > 0] = 255
+	a7[a7 > 0] = 255
+	Image.fromarray(a7).save(savePath / "a7.png")
+	Image.fromarray(a6).save(savePath / "a6.png")
+	Image.fromarray(a5).save(savePath / "a5.png")
+	Image.fromarray(a4).save(savePath / "a4.png")
+	Image.fromarray(a3).save(savePath / "a3.png")
+	Image.fromarray(a2).save(savePath / "a2.png")
+	Image.fromarray(a1).save(savePath / "a1.png")
+	Image.fromarray(a0).save(savePath / "a0.png")
 
-#def decodeImageGray(name):
+
+def decodeImageGray(imgName, decode=True):
+	filesPath = Path("out/files/" + imgName + "/")
+	savePath = Path("out/resultGray/" + imgName + "/")
+	if(decode):
+		g7 = RLEDecode(numpy.load(filesPath / "g7RLE.npy"))
+		g6 = RLEDecode(numpy.load(filesPath / "g6RLE.npy"))
+		g5 = RLEDecode(numpy.load(filesPath / "g5RLE.npy"))
+		g4 = RLEDecode(numpy.load(filesPath / "g4RLE.npy"))
+		g3 = RLEDecode(numpy.load(filesPath / "g3RLE.npy"))
+		g2 = RLEDecode(numpy.load(filesPath / "g2RLE.npy"))
+		g1 = RLEDecode(numpy.load(filesPath / "g1RLE.npy"))
+		g0 = RLEDecode(numpy.load(filesPath / "g0RLE.npy"))
+	else:
+		g7 = numpy.load(filesPath / "g7.npy")
+		g6 = numpy.load(filesPath / "g6.npy")
+		g5 = numpy.load(filesPath / "g5.npy")
+		g4 = numpy.load(filesPath / "g4.npy")
+		g3 = numpy.load(filesPath / "g3.npy")
+		g2 = numpy.load(filesPath / "g2.npy")
+		g1 = numpy.load(filesPath / "g1.npy")
+		g0 = numpy.load(filesPath / "g0.npy")
+	height, width = g7.shape
+	newImageArray = decodeGrayCode(height, width, g7, g6, g5, g4, g3, g2, g1, g0)
+	save_path = os.path.join(savePath, imgName + "_without3Bits.png")
+	os.makedirs(os.path.dirname(save_path), exist_ok=True)
+	Image.fromarray(newImageArray).save(save_path)
+	
+	g0[g0 > 0] = 255
+	g1[g1 > 0] = 255
+	g2[g2 > 0] = 255
+	g3[g3 > 0] = 255
+	g4[g4 > 0] = 255
+	g5[g5 > 0] = 255
+	g6[g6 > 0] = 255
+	g7[g7 > 0] = 255
+	Image.fromarray(g7).save(savePath / "g7.png")
+	Image.fromarray(g6).save(savePath / "g6.png")
+	Image.fromarray(g5).save(savePath / "g5.png")
+	Image.fromarray(g4).save(savePath / "g4.png")
+	Image.fromarray(g3).save(savePath / "g3.png")
+	Image.fromarray(g2).save(savePath / "g2.png")
+	Image.fromarray(g1).save(savePath / "g1.png")
+	Image.fromarray(g0).save(savePath / "g0.png")
+	
 
 def XOR(arg1, arg2):
 	ret = not(arg1 and arg2) and (arg1 or arg2)
@@ -294,13 +265,14 @@ def decodeGrayCode(height, width, g7, g6, g5, g4, g3, g2, g1, g0):
 			a2 = XOR(g2[yy, xx], a3)
 			a1 = XOR(g1[yy, xx], a2)
 			a0 = XOR(g0[yy, xx], a1)
-			newImageArray2[yy, xx] = (a7 * 128) + (a6 * 64) + (a5 * 32) + (a4 * 16) + (a3 * 8) + (a2 * 4) + (a1 * 2) + a0
+			newImageArray2[yy, xx] = (a7 * 128) + (a6 * 64) + (a5 * 32) + (a4 * 16) + (a3 * 8)# + (a2 * 4) + (a1 * 2) + a0
 	return newImageArray2
 
 
 begin = time.time()
-#binaryBitplan("Image_(1).tif")
-#decodeImageBinary("testDecode", True)
+binaryBitplan("Image_(3).tif")
+decodeImageBinary("Image_(3)")
+decodeImageGray("Image_(3)")
 end = time.time()
 
 print("Finalizado: " + str(round(end-begin, 2)) + "s\n")
