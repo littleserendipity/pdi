@@ -10,10 +10,9 @@ def main():
     # img.light(h=1, s=1.5, i=0.4)
     # img.save(extension="hsv_darken_2")
 
-    img = im.Image("Image_(2a)", type="jpg")
-    img.light()
-    img.show()
-    # img.save(extension="hsv_darken_2")
+    img = im.Image("Image_(2b)", type="jpg")
+    extension = img.clear(times=5, side=3, factor="hsv", median=True)
+    img.save(extension=extension)
 
 if __name__ == '__main__':
     main()

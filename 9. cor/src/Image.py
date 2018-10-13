@@ -3,15 +3,12 @@ import numpy as np
 import Utils as utl
 
 class Image():
-    def __init__(self, img=None, type="png", name="image", gray=False, noise=0, median=False, gauss=False):
+    def __init__(self, img=None, type="png", name="image", gray=False):
         self.path = utl.Path()
         self.name = name
         self.type = type
-        self.noise = noise
         self.arr = None
         self.shapes = None
-        self.median = median
-        self.gauss = gauss
 
         if (isinstance(img, str)):
             self.name = img
@@ -45,11 +42,9 @@ class Image():
         self.arr = np.divide(self.arr, 255) 
 
     def light(self, h=1, s=1, i=1):
-        for y in range(self.shapes[0]):
-            for x in range(self.shapes[1]):
-                self.arr[y,x] = self.rgb2hsv(self.arr[y,x])
-                self.arr[y,x] = np.multiply(self.arr[y,x], [h, s, i])
-                self.arr[y,x] = self.hsv2rgb(self.arr[y,x])
+        self.arr = np.apply_along_axis(self.rgb2hsv, 2, self.arr)
+        self.arr = np.apply_along_axis(np.multiply, 2, self.arr, [h, s, i])
+        self.arr = np.apply_along_axis(self.hsv2rgb, 2, self.arr)
         self.arr[self.arr < 0] = 0
         self.arr[self.arr > 1] = 1
 
@@ -153,14 +148,39 @@ class Image():
 
         return r,g,b
 
-    def clear(self, kernel=None, times=2, side=3):
+    def clear(self, factor="gray", kernel=None, times=2, side=7, median=False, gauss=False):
+        if (len(self.shapes) == 3):
+            if (factor == "hsv"):
+                funcIn = self.rgb2hsv
+                funcOut = self.hsv2rgb
+            elif (factor == "hsi"):
+                funcIn = self.rgb2hsi
+                funcOut = self.hsi2rgb
+
+            self.arr = np.apply_along_axis(funcIn, 2, self.arr)
+            self.__clear__(kernel=kernel, times=times, side=side, median=median, gauss=gauss)
+            self.arr = np.apply_along_axis(funcOut, 2, self.arr)
+            
+            self.arr[self.arr < 0] = 0
+            self.arr[self.arr > 1] = 1
+
+        else:
+            self.__clear__(kernel=kernel, times=times, side=side, median=median, gauss=gauss)
+        
+        extension = factor
+        if (median): extension += "_median"
+        if (gauss): extension += "_gauss"
+        extension += "_"+str(side)+"x"+str(side)
+        return extension
+
+    def __clear__(self, kernel, times, side, median, gauss):
         gaussian_filter = np.array([[1/16, 1/8, 1/16],[1/8,  1/4, 1/8],[1/16, 1/8, 1/16]])
         if (kernel is None): kernel = np.ones((side, side))
 
-        if (self.median):
+        if (median):
             for _ in range(times):
                 self.arr = self.windowConvolve(kernel, np.median)
-        if (self.gauss):
+        if (gauss):
             for _ in range(times):
                 self.arr = self.windowConvolve(gaussian_filter, np.sum)
 
@@ -168,19 +188,35 @@ class Image():
         return self.windowConvolve(kernel, np.sum)
 
     def windowConvolve(self, kernel, function):
+        self_arr = self.arr
         m, n = kernel.shape
         pad_h, pad_w = (m//2), (n//2)
-        H, W = self.arr.shape
 
+        if (len(self_arr.shape) == 3):
+            arr = self_arr[:,:,-1:]
+            arr = arr[:,:,0].astype('float')
+        else:
+            arr = self_arr
+
+        H, W = arr.shape
         img = np.ones((H + pad_h * 2, W + pad_w * 2)) * 128
         new_img = np.ones((H + pad_h * 2, W + pad_w * 2))
-        img[pad_h:-pad_h, pad_w:-pad_w] = self.arr
+        img[pad_h:-pad_h, pad_w:-pad_w] = arr
 
         for i in range(pad_h, H+pad_h):
             for j in range(pad_w, W+pad_w):
                 new_img[i,j] = function(np.multiply(img[i-pad_h:i+m-pad_h, j-pad_w:j+n-pad_w], kernel))
 
-        return new_img[pad_h:-pad_h,pad_w:-pad_w]
+        n_arr = new_img[pad_h:-pad_h,pad_w:-pad_w]
+
+        if (len(self_arr.shape) == 3):
+            for y in range(len(self_arr)):
+                for x in range(len(self_arr[0])):
+                    self_arr[y,x,2] = n_arr[y,x]
+        else:
+            self_arr = n_arr
+
+        return self_arr
 
     def features(self):
         n00 = self.momentCentral(self.arr, 0, 0)
