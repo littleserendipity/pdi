@@ -44,12 +44,14 @@ class Image():
     def normalize(self):
         self.arr = np.divide(self.arr, 255) 
 
-    def light(self, number):
+    def light(self, h=1, s=1, i=1):
         for y in range(self.shapes[0]):
             for x in range(self.shapes[1]):
-                self.arr[y,x] = self.rgb2hsi(self.arr[y,x])
-                # self.arr[y,x,2] *= number
-                self.arr[y,x] = self.hsi2rgb(self.arr[y,x])
+                self.arr[y,x] = self.rgb2hsv(self.arr[y,x])
+                self.arr[y,x] = np.multiply(self.arr[y,x], [h, s, i])
+                self.arr[y,x] = self.hsv2rgb(self.arr[y,x])
+        self.arr[self.arr < 0] = 0
+        self.arr[self.arr > 1] = 1
 
     def rgb2hsv(self, pixel):
         r, g, b = pixel
@@ -95,66 +97,65 @@ class Image():
             return v, p, q
 
     def rgb2hsi(self, pixel):
-        alpha = 0.000001
-        I = np.mean(pixel)
-        S = 1 - ((3*np.min(pixel)) / (alpha + np.sum(pixel)))
+        r = pixel[0] 
+        g = pixel[1] 
+        b = pixel[2]
+        
+        num = 0.5 * ((r-g) + (r-b))
+        den = np.sqrt(((r-g) * (r-g)) + (r-b) * (g-b))
+        
+        ind = np.zeros(shape=r.shape, dtype=bool)
+        theta = np.zeros(shape=r.shape, dtype=float)
 
-        rg = pixel[0] - pixel[1]
-        rb = pixel[0] - pixel[2]
-        gb = pixel[1] - pixel[2]
+        ind = (den != 0)
+        h = np.zeros(shape=r.shape, dtype=float)        
+        h[ind] = np.arccos(num[ind]/den[ind]) / (2*np.pi)
 
-        numi = 0.5 * (rg + rb)
-        denom = np.sqrt((rg**2) + (rb * gb)) + alpha
+        ind = (b > g)
+        h[ind] = 1 - theta[ind]
 
-        H = np.arccos(numi/denom)
-        H = (360-H)  if (pixel[2] > pixel[1]) else H
-        H /= 360
-        return H,S,I
+        i = (r + g + b) / 3
+        
+        s = np.zeros(shape=r.shape, dtype=float)
+        ind = (i != 0)
+        s[ind] = 1 - np.minimum(np.minimum(r, g), b)[ind] / i[ind]
+
+        return h,s,i
 
     def hsi2rgb(self, pixel):
-        pixel[pixel > 1] = 1
-        H, S, I = pixel
+        h = pixel[0] * 2 * np.pi
+        s = pixel[1]
+        i = pixel[2]
 
-        if (S == 0):
-            return I,I,I
-        else:
-            H *= 360
-            if (0 <= H < 120):
-                numi = pixel[1] * np.cos(H)
-                denom = np.cos(60 - H)
-                
-                B = I * (1 - S)
-                R = I * (1 + (numi/denom))
-                G = (3 * I) - (B + R)
+        r = np.zeros(shape=h.shape, dtype=float)
+        g = np.zeros(shape=h.shape, dtype=float)
+        b = np.zeros(shape=h.shape, dtype=float)
 
-            elif (120 <= H < 240):
-                H -= 120
-                numi = pixel[1] * np.cos(H)
-                denom = np.cos(60 - H)
+        # RG
+        ind = np.logical_and(0 <= h, h < np.radians(120))
+        b[ind] = i[ind]*(1 - s[ind])
+        r[ind] = i[ind]*(1 + (s[ind]*np.cos(h[ind])) / np.cos(np.radians(60) - h[ind]))
+        g[ind] = 3*i[ind] - (r[ind] + b[ind])
 
-                R = I * (1 - S)
-                G = I * (1 + (numi/denom))
-                B = (3 * I) - (R + G)
+        # GB
+        ind = np.logical_and(np.radians(120) <= h, h < np.radians(240))
+        h_gb = h - np.radians(120)
+        r[ind] = i[ind]*(1 - s[ind])
+        g[ind] = i[ind]*(1 + (s[ind]*np.cos(h_gb[ind]) / np.cos(np.radians(60) - h_gb[ind])))
+        b[ind] = 3*i[ind] - (r[ind] + g[ind])
+        
+        # RB
+        ind = np.logical_and(np.radians(240) <= h, h <= np.radians(360))
+        h_rb = h - np.radians(240)
+        g[ind] = i[ind]*(1 - s[ind])
+        b[ind] = i[ind]*(1 + (s[ind]*np.cos(h_rb[ind]) / np.cos(np.radians(60) - h_rb[ind])))
+        r[ind] = 3*i[ind] - (g[ind] + b[ind])
 
-            elif (240 <= H <= 360):
-                H -= 240
-                numi = pixel[1] * np.cos(H)
-                denom = np.cos(60 - H)
-
-                G = I * (1 - S)
-                B = I * (1 + (numi/denom))
-                R = (3 * I) - (G + B)
-            return R,G,B
+        return r,g,b
 
     def clear(self, kernel=None, times=2, side=3):
-        gaussian_filter = np.array([
-            [1/16, 1/8, 1/16],
-            [1/8,  1/4, 1/8],
-            [1/16, 1/8, 1/16],
-        ])
-
-        if (kernel is None):
-            kernel = np.ones((side, side))
+        gaussian_filter = np.array([[1/16, 1/8, 1/16],[1/8,  1/4, 1/8],[1/16, 1/8, 1/16]])
+        if (kernel is None): kernel = np.ones((side, side))
 
         if (self.median):
             for _ in range(times):
