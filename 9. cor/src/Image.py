@@ -3,7 +3,7 @@ import numpy as np
 import Utils as utl
 
 class Image():
-    def __init__(self, img=None, type="png", name="image", noise=0, median=False, gauss=False):
+    def __init__(self, img=None, type="png", name="image", gray=False, noise=0, median=False, gauss=False):
         self.path = utl.Path()
         self.name = name
         self.type = type
@@ -15,29 +15,136 @@ class Image():
 
         if (isinstance(img, str)):
             self.name = img
-            self.arr = np.array(plt.imread(self.path.getFileDir(self.name + "." + self.type)), dtype=int)
-            self.imageToGray()
+            self.arr = np.array(plt.imread(self.path.getFileDir(self.name + "." + self.type)), dtype=float)
         else:
-            self.arr = np.asarray(img, dtype=int)
+            self.arr = np.asarray(img, dtype=float)
+
         self.shapes = self.arr.shape
-        
-    def imageToGray(self):
-        if (len(self.arr.shape) == 3):
-            self.arr = np.array(np.dot(self.arr[...,:3], [0.299, 0.587, 0.114]), dtype=int)
+        self.normalize()
+        if gray: self.imageToGray()
 
     def setImg(self, image, convert=False):
-        self.arr = np.asarray(image, dtype=int)
+        self.arr = np.asarray(image, dtype=float)
         self.shapes = self.arr.shape
         if convert:
             self.imageToGray()
 
-    def show(self, mode="Greys_r"):
-        plt.imshow(self.arr, cmap=mode)
+    def show(self):
+        plt.imshow(self.arr)
         plt.show()
 
-    def save(self, extension=None, mode="Greys_r"):
+    def save(self, extension=None):
         name = self.path.getNameResult(self.name+"."+self.type, extension)
-        plt.imsave(self.path.getPathSave(name), self.arr, cmap=mode)
+        plt.imsave(self.path.getPathSave(name), self.arr)
+
+    def imageToGray(self):
+        if (len(self.arr.shape) == 3):
+            self.setImg(np.array(np.dot(self.arr[...,:3], [0.299, 0.587, 0.114]), dtype=float))
+
+    def normalize(self):
+        self.arr = np.divide(self.arr, 255) 
+
+    def light(self, number):
+        for y in range(self.shapes[0]):
+            for x in range(self.shapes[1]):
+                self.arr[y,x] = self.rgb2hsi(self.arr[y,x])
+                # self.arr[y,x,2] *= number
+                self.arr[y,x] = self.hsi2rgb(self.arr[y,x])
+
+    def rgb2hsv(self, pixel):
+        r, g, b = pixel
+        maxc = max(r, g, b)
+        minc = min(r, g, b)
+        v = maxc
+        if minc == maxc:
+            return 0.0, 0.0, v
+        s = (maxc-minc) / maxc
+        rc = (maxc-r) / (maxc-minc)
+        gc = (maxc-g) / (maxc-minc)
+        bc = (maxc-b) / (maxc-minc)
+        if r == maxc:
+            h = bc-gc
+        elif g == maxc:
+            h = 2.0+rc-bc
+        else:
+            h = 4.0+gc-rc
+        h = (h/6.0) % 1.0
+        return h, s, v
+
+    def hsv2rgb(self, pixel):
+        h, s, v = pixel
+        if s == 0.0:
+            return v, v, v
+        i = int(h*6.0)
+        f = (h*6.0) - i
+        p = v*(1.0 - s)
+        q = v*(1.0 - s*f)
+        t = v*(1.0 - s*(1.0-f))
+        i = i%6
+        if i == 0:
+            return v, t, p
+        if i == 1:
+            return q, v, p
+        if i == 2:
+            return p, v, t
+        if i == 3:
+            return p, q, v
+        if i == 4:
+            return t, p, v
+        if i == 5:
+            return v, p, q
+
+    def rgb2hsi(self, pixel):
+        alpha = 0.000001
+        I = np.mean(pixel)
+        S = 1 - ((3*np.min(pixel)) / (alpha + np.sum(pixel)))
+
+        rg = pixel[0] - pixel[1]
+        rb = pixel[0] - pixel[2]
+        gb = pixel[1] - pixel[2]
+
+        numi = 0.5 * (rg + rb)
+        denom = np.sqrt((rg**2) + (rb * gb)) + alpha
+
+        H = np.arccos(numi/denom)
+        H = (360-H)  if (pixel[2] > pixel[1]) else H
+        H /= 360
+        return H,S,I
+
+    def hsi2rgb(self, pixel):
+        pixel[pixel > 1] = 1
+        H, S, I = pixel
+
+        if (S == 0):
+            return I,I,I
+        else:
+            H *= 360
+            if (0 <= H < 120):
+                numi = pixel[1] * np.cos(H)
+                denom = np.cos(60 - H)
+                
+                B = I * (1 - S)
+                R = I * (1 + (numi/denom))
+                G = (3 * I) - (B + R)
+
+            elif (120 <= H < 240):
+                H -= 120
+                numi = pixel[1] * np.cos(H)
+                denom = np.cos(60 - H)
+
+                R = I * (1 - S)
+                G = I * (1 + (numi/denom))
+                B = (3 * I) - (R + G)
+
+            elif (240 <= H <= 360):
+                H -= 240
+                numi = pixel[1] * np.cos(H)
+                denom = np.cos(60 - H)
+
+                G = I * (1 - S)
+                B = I * (1 + (numi/denom))
+                R = (3 * I) - (G + B)
+            return R,G,B
 
     def clear(self, kernel=None, times=2, side=3):
         gaussian_filter = np.array([
