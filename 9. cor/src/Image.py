@@ -26,13 +26,13 @@ class Image():
         if convert:
             self.imageToGray()
 
-    def show(self):
-        plt.imshow(self.arr)
+    def show(self, mode="Greys_r"):
+        plt.imshow(self.arr, cmap=mode)
         plt.show()
 
-    def save(self, extension=None):
+    def save(self, extension=None, mode="Greys_r"):
         name = self.path.getNameResult(self.name+"."+self.type, extension)
-        plt.imsave(self.path.getPathSave(name), self.arr)
+        plt.imsave(self.path.getPathSave(name), self.arr, cmap=mode)
 
     def imageToGray(self):
         if (len(self.arr.shape) == 3):
@@ -150,55 +150,55 @@ class Image():
 
     def clear(self, factor="gray", kernel=None, times=2, side=7, median=False, gauss=False):
         if (len(self.shapes) == 3):
-            if (factor == "hsv"):
-                funcIn = self.rgb2hsv
-                funcOut = self.hsv2rgb
-            elif (factor == "hsi"):
-                funcIn = self.rgb2hsi
-                funcOut = self.hsi2rgb
+            if (factor == "rgb"):
+                for x in range(3):
+                    self.__clear__(kernel=kernel, times=times, side=side, median=median, gauss=gauss, index=x)
+            else:
+                if (factor == "hsv"):
+                    funcIn = self.rgb2hsv
+                    funcOut = self.hsv2rgb
+                elif (factor == "hsi"):
+                    funcIn = self.rgb2hsi
+                    funcOut = self.hsi2rgb
 
-            self.arr = np.apply_along_axis(funcIn, 2, self.arr)
-            self.__clear__(kernel=kernel, times=times, side=side, median=median, gauss=gauss)
-            self.arr = np.apply_along_axis(funcOut, 2, self.arr)
-            
-            self.arr[self.arr < 0] = 0
-            self.arr[self.arr > 1] = 1
-
+                self.arr = np.apply_along_axis(funcIn, 2, self.arr)
+                self.__clear__(kernel=kernel, times=times, side=side, median=median, gauss=gauss)
+                self.arr = np.apply_along_axis(funcOut, 2, self.arr)    
         else:
             self.__clear__(kernel=kernel, times=times, side=side, median=median, gauss=gauss)
+
+        self.arr[self.arr < 0] = 0
+        self.arr[self.arr > 1] = 1
         
         extension = factor
         if (median): extension += "_median"
         if (gauss): extension += "_gauss"
-        extension += "_"+str(side)+"x"+str(side)
+        extension += "_"+str(side)+"x"+str(side)+"_("+str(times)+"x)"
         return extension
 
-    def __clear__(self, kernel, times, side, median, gauss):
+    def __clear__(self, kernel, times, side, median, gauss, index=0):
         gaussian_filter = np.array([[1/16, 1/8, 1/16],[1/8,  1/4, 1/8],[1/16, 1/8, 1/16]])
         if (kernel is None): kernel = np.ones((side, side))
 
         if (median):
             for _ in range(times):
-                self.arr = self.windowConvolve(kernel, np.median)
+                self.arr = self.windowConvolve(kernel, np.median, index)
         if (gauss):
             for _ in range(times):
-                self.arr = self.windowConvolve(gaussian_filter, np.sum)
+                self.arr = self.windowConvolve(gaussian_filter, np.sum, index)
 
-    def convolve(self, kernel):
-        return self.windowConvolve(kernel, np.sum)
+    def convolve(self, kernel, index=0):
+        return self.windowConvolve(kernel, np.sum, index)
 
-    def windowConvolve(self, kernel, function):
-        self_arr = self.arr
+    def windowConvolve(self, kernel, function, index):
+        rgb = (len(self.shapes) == 3)
+        arr_copy = self.arr
         m, n = kernel.shape
         pad_h, pad_w = (m//2), (n//2)
 
-        if (len(self_arr.shape) == 3):
-            arr = self_arr[:,:,-1:]
-            arr = arr[:,:,0].astype('float')
-        else:
-            arr = self_arr
-
+        arr = arr_copy[:,:,index] if (rgb) else arr_copy
         H, W = arr.shape
+        
         img = np.ones((H + pad_h * 2, W + pad_w * 2)) * 128
         new_img = np.ones((H + pad_h * 2, W + pad_w * 2))
         img[pad_h:-pad_h, pad_w:-pad_w] = arr
@@ -209,14 +209,12 @@ class Image():
 
         n_arr = new_img[pad_h:-pad_h,pad_w:-pad_w]
 
-        if (len(self_arr.shape) == 3):
-            for y in range(len(self_arr)):
-                for x in range(len(self_arr[0])):
-                    self_arr[y,x,2] = n_arr[y,x]
+        if (rgb):
+            arr_copy[:,:,index] = n_arr[:,:]
         else:
-            self_arr = n_arr
+            arr_copy = n_arr
 
-        return self_arr
+        return arr_copy
 
     def features(self):
         n00 = self.momentCentral(self.arr, 0, 0)
