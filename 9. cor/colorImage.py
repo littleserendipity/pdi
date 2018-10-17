@@ -19,13 +19,10 @@ def floodFill(imageArray, newImageArray, pointX, pointY, red, green, blue):
 	while(nodePoint):
 		xx = nodePoint.val[1]
 		yy = nodePoint.val[0]
-		# print("x = " + str(xx))
-		# print("y = " + str(yy))
 		if(yy < 0 or yy > height or xx < 0 or xx > width):
 			nodePoint = nodePoint.nextVal
 		elif imageArray[yy, xx] > 50:
 			numberOfPoints +=1
-			#alpha = 0.2
 			colorRed = (imageArray[yy, xx] * red)/255
 			colorGreen = (imageArray[yy, xx] * green)/255
 			colorBlue = (imageArray[yy, xx] * blue)/255
@@ -35,7 +32,6 @@ def floodFill(imageArray, newImageArray, pointX, pointY, red, green, blue):
 			nodeEast = pointNodes(numpy.array([yy, xx+1]))
 			nodeNorth = pointNodes(numpy.array([yy-1, xx]))
 			nodeSouth = pointNodes(numpy.array([yy+1, xx]))
-			#nodePoint = nodeWest
 			nodeWest.nextVal = nodeEast
 			nodeEast.nextVal = nodeNorth
 			nodeNorth.nextVal = nodeSouth
@@ -45,10 +41,6 @@ def floodFill(imageArray, newImageArray, pointX, pointY, red, green, blue):
 			nodePoint = nodePoint.nextVal
 	print(numberOfPoints)
 	return newImageArray
-	#save_path = os.path.join(filesPath, "resultBartFloodFill.png")
-	#os.makedirs(os.path.dirname(save_path), exist_ok=True)
-	#Image.fromarray(newImageArray).save(save_path)
-
 
 def colorImage(img):
 	path = "data"
@@ -56,21 +48,11 @@ def colorImage(img):
 	im = Image.open(os.path.join(path, img), "r")
 	imageArray = numpy.array(im, dtype=numpy.uint8)
 	height, width = imageArray.shape
-	pointX = 305
-	pointY = 150
-	#bart's head
-	#pointX = 486
-	#pointY = 556
-	#bart's shirt
-	nodePoint = pointNodes(numpy.array([pointY, pointX]))
-	
-	#print(imageArray[105, 231])
 	newImageArray = numpy.zeros((height, width, 3), dtype=numpy.uint8)  #colors
 	for yy in range(height):
 		for xx in range(width):
 			value = imageArray[yy, xx]
 			newImageArray[yy, xx] = (value, value, value)
-
 	newImageArray = floodFill(imageArray, newImageArray, 305, 150, 255, 255, 0) # head
 	newImageArray = floodFill(imageArray, newImageArray, 245, 561, 255, 255, 0) # arm1
 	newImageArray = floodFill(imageArray, newImageArray, 579, 505, 255, 255, 0) # arm2
@@ -90,7 +72,7 @@ def colorImage(img):
 
 
 
-#this one doesn't work, but I didn't want to delet it, so here it is
+#this one doesn't work, but I didn't want to delete it, so here it is
 def floodFillRecursive(imageArray, newImageArray, pointX, pointY):
 	height, width = imageArray.shape
 	if(pointX < 0 or pointX > width or pointY < 0 or pointY > height):
