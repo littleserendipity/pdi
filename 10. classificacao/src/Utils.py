@@ -15,7 +15,11 @@ class Path():
         if (extension is None):
             return file_name
         else:
-            return file_name.replace(".", ("_"+extension+"."))
+            try:
+                splitted = file_name.split(".")
+                return splitted[0] + "_" + extension + "." + splitted[1]
+            except:
+                return file_name + "_" + extension 
 
     def getPathSave(self, name):
         os.makedirs(self.results, exist_ok=True)

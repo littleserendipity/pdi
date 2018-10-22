@@ -1,5 +1,8 @@
-import numpy as np
+from graphviz import Digraph
+from Utils import Path
 import collections
+import numpy as np
+import time
 
 class DecisionTree():
     def __init__(self, col=-1, value=None, true_branch=None, false_branch=None, results=None):
@@ -23,7 +26,7 @@ def uniqueCounts(rows):
 	results = {}
 	for row in rows:
 		r = row[-1]
-		if r not in results: results[r] = 0
+		if (r not in results): results[r] = 0
 		results[r] += 1
 	return results
 
@@ -55,7 +58,7 @@ def growTree(rows, evaluationFunction=entropy):
 
 	current_score = evaluationFunction(rows)
 	best_gain = 0.0
-	best_attribute = None
+	best_attr = None
 	best_sets = None
 	column_count = len(rows[0]) - 1
 
@@ -67,16 +70,16 @@ def growTree(rows, evaluationFunction=entropy):
 
 			# Gain -- Entropy or Gini
 			p = float(len(set1)) / len(rows)
-			gain = current_score - p*evaluationFunction(set1) - (1-p)*evaluationFunction(set2)
+			gain = current_score - (p*evaluationFunction(set1)) - ((1-p)*evaluationFunction(set2))
 			if (gain > best_gain and len(set1) > 0 and len(set2) > 0):
 				best_gain = gain
-				best_attribute = (col, value)
+				best_attr = (col, value)
 				best_sets = (set1, set2)
 
 	if (best_gain > 0):
 		true_branch = growTree(best_sets[0])
 		false_branch = growTree(best_sets[1])
-		return DecisionTree(col=best_attribute[0], value=best_attribute[1], true_branch=true_branch, false_branch=false_branch)
+		return DecisionTree(col=best_attr[0], value=best_attr[1], true_branch=true_branch, false_branch=false_branch)
 	else:
 		return DecisionTree(results=uniqueCounts(rows))
 
@@ -107,10 +110,10 @@ def classify(tree, observations, data_missing=False):
             v = observations[tree.col]
             branch = None
             if (isinstance(v, int) or isinstance(v, float)):
-                if v >= tree.value: branch = tree.true_branch
+                if (v >= tree.value): branch = tree.true_branch
                 else: branch = tree.false_branch
             else:
-                if v == tree.value: branch = tree.true_branch
+                if (v == tree.value): branch = tree.true_branch
                 else: branch = tree.false_branch
         return withData(observations, branch)
 
@@ -133,29 +136,72 @@ def classify(tree, observations, data_missing=False):
             else:
                 branch = None
                 if (isinstance(v, int) or isinstance(v, float)):
-                    if v >= tree.value: branch = tree.true_branch
+                    if (v >= tree.value): branch = tree.true_branch
                     else: branch = tree.false_branch
                 else:
-                    if v == tree.value: branch = tree.true_branch
+                    if (v == tree.value): branch = tree.true_branch
                     else: branch = tree.false_branch
             return withMissingData(observations, branch)
 
     if data_missing:
-        return withMissingData(observations, tree)
+        return classesText(withMissingData(observations, tree))
     else: 
-        return withData(observations, tree)
+        return classesText(withData(observations, tree))
 
-def plot(decisionTree):
+def classesText(object_key, line=True):
+    breakline = '\n' if line else ''
+    return ''.join(['%s (%s) %s' % (key, object_key[key], breakline) for key in object_key])
+
+def plotText(decisionTree):
     def toString(decisionTree, indent=''):
         if (decisionTree.results != None):
-            return str(decisionTree.results)
+            return classesText(decisionTree.results, line=False)
         else:
             if (isinstance(decisionTree.value, int) or isinstance(decisionTree.value, float)):
-                decision = 'Column %s: x >= %s?' % (decisionTree.col, decisionTree.value)
+                decision = 'Attr %s: x >= %s?' % (decisionTree.col, decisionTree.value)
             else:
-                decision = 'Column %s: x == %s?' % (decisionTree.col, decisionTree.value)
-            true_branch = indent + 'yes -> ' + toString(decisionTree.true_branch, indent + '\t\t')
-            false_branch = indent + 'no  -> ' + toString(decisionTree.false_branch, indent + '\t\t')
+                decision = 'Attr %s: x == %s?' % (decisionTree.col, decisionTree.value)
+            true_branch = indent + '|--- yes -> ' + toString(decisionTree.true_branch, indent + '\t\t')
+            false_branch = indent + '|--- no  -> ' + toString(decisionTree.false_branch, indent + '\t\t')
             return (decision + '\n' + true_branch + '\n' + false_branch)
 
     print(toString(decisionTree), '\n')
+
+def plotDiagram(decisionTree, extension=None):
+
+    cl_bg = "#d8dff2"
+    cl_root = "#f9bd77"
+    cl_left = "#fefedf"
+    cl_right = "#63a2d8"
+    cl_leaf = "#4a6f46"
+    cl_border = "#20202050"
+
+    def plotNodes(decisionTree, dot, route, identifier=0, color=cl_root):
+        if (decisionTree.results != None):
+            dot.node(str(identifier), classesText(decisionTree.results), shape="egg", style="filled", color=cl_border, fillcolor=cl_leaf, fontcolor="white")
+        else:
+            decision = 'Attr %s: x >= %s ?' % (decisionTree.col, decisionTree.value)
+            dot.node(str(identifier), decision, shape="box", style="filled", color=cl_border, fillcolor=color)
+
+            leftID = identifier + 1 + time.time()
+            rightID = identifier + 1001 + time.time()
+            route.append([False, identifier, leftID])
+            route.append([True, identifier, rightID])
+            
+            plotNodes(decisionTree.false_branch, dot, route, leftID, cl_left)
+            plotNodes(decisionTree.true_branch, dot, route, rightID, cl_right)
+
+    def plotEdges(dot, route):
+        for x in range(len(route)):
+            dot.edge(str(route[x][1]), str(route[x][2]), label=str(route[x][0]))
+
+    dot = Digraph()
+    dot.attr(bgcolor=cl_bg)
+    dot.format = 'png'
+    route = []
+
+    plotNodes(decisionTree, dot, route)
+    plotEdges(dot, route)
+
+    name = Path().getNameResult("decision_tree_diagram", extension)
+    dot.render(Path().getPathSave(name))

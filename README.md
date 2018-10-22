@@ -6,3 +6,4 @@ Projeto e listas da cadeira PDI - POLI (2018.2)
     pillow
     matplotlib
     h5py
+    graphviz
