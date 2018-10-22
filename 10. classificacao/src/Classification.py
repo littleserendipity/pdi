@@ -1,5 +1,6 @@
 from graphviz import Digraph
 from Utils import Path
+import Image as im
 import collections
 import numpy as np
 import time
@@ -11,6 +12,15 @@ class DecisionTree():
         self.true_branch = true_branch
         self.false_branch = false_branch
         self.results = results
+
+def pre_organize(imgs, arr_y=None, gray=False):
+    arr = []
+    for j in range(len(imgs)):
+        i = im.Image(imgs[j], gray=gray)
+        fe = list(i.features())
+        if arr_y is not None: fe.append(arr_y[j])
+        arr.append(fe)
+    return arr
 
 def divideSet(rows, column, value):
 	splittingFunction = None
@@ -53,41 +63,44 @@ def gini(rows):
 			imp += p1*p2
 	return imp
 
-def growTree(rows, evaluationFunction=entropy):
-	if len(rows) == 0: return DecisionTree()
+def growTree(rows, option):
+    if len(rows) == 0: return DecisionTree()
+    evaluation = gini if option == "gini" else entropy
 
-	current_score = evaluationFunction(rows)
-	best_gain = 0.0
-	best_attr = None
-	best_sets = None
-	column_count = len(rows[0]) - 1
+    current_score = evaluation(rows)
+    best_gain = 0.0
+    best_attr = None
+    best_sets = None
+    column_count = len(rows[0]) - 1
 
-	for col in range(0, column_count):
-		columnValues = [row[col] for row in rows]
+    for col in range(0, column_count):
+        columnValues = [row[col] for row in rows]
 
-		for value in columnValues:
-			(set1, set2) = divideSet(rows, col, value)
+        for value in columnValues:
+            (set1, set2) = divideSet(rows, col, value)
 
-			# Gain -- Entropy or Gini
-			p = float(len(set1)) / len(rows)
-			gain = current_score - (p*evaluationFunction(set1)) - ((1-p)*evaluationFunction(set2))
-			if (gain > best_gain and len(set1) > 0 and len(set2) > 0):
-				best_gain = gain
-				best_attr = (col, value)
-				best_sets = (set1, set2)
+            # Gain -- Entropy or Gini
+            p = float(len(set1)) / len(rows)
+            gain = current_score - (p*evaluation(set1)) - ((1-p)*evaluation(set2))
+            if (gain > best_gain and len(set1) > 0 and len(set2) > 0):
+                best_gain = gain
+                best_attr = (col, value)
+                best_sets = (set1, set2)
 
-	if (best_gain > 0):
-		true_branch = growTree(best_sets[0])
-		false_branch = growTree(best_sets[1])
-		return DecisionTree(col=best_attr[0], value=best_attr[1], true_branch=true_branch, false_branch=false_branch)
-	else:
-		return DecisionTree(results=uniqueCounts(rows))
+    if (best_gain > 0):
+        true_branch = growTree(best_sets[0], option)
+        false_branch = growTree(best_sets[1], option)
+        return DecisionTree(col=best_attr[0], value=best_attr[1], true_branch=true_branch, false_branch=false_branch)
+    else:
+        return DecisionTree(results=uniqueCounts(rows))
 
-def prune(tree, min_gain, evaluationFunction=entropy, notify=False):
+def prune(tree, option, min_gain=0):
+    evaluation = gini if option == "gini" else entropy
+
     if (tree.true_branch.results == None): 
-        prune(tree.true_branch, min_gain, evaluationFunction, notify)
+        prune(tree.true_branch, option, min_gain)
     if (tree.false_branch.results == None): 
-        prune(tree.false_branch, min_gain, evaluationFunction, notify)
+        prune(tree.false_branch, option, min_gain)
 
     if (tree.true_branch.results != None and tree.false_branch.results != None):
         tb, fb = [], []
@@ -95,14 +108,14 @@ def prune(tree, min_gain, evaluationFunction=entropy, notify=False):
         for v, c in tree.false_branch.results.items(): fb += [[v]] * c
 
         p = float(len(tb)) / len(tb + fb)
-        delta = evaluationFunction(tb+fb) - p*evaluationFunction(tb) - (1-p)*evaluationFunction(fb)
-        if (delta < min_gain):	
-            if notify: print('A branch was pruned: gain = %f' % delta, '\n')		
+        delta = evaluation(tb+fb) - p*evaluation(tb) - (1-p)*evaluation(fb)
+        if (delta < min_gain):
+            print('A branch was pruned: gain ~ %f' % delta)		
             tree.true_branch, tree.false_branch = None, None
             tree.results = uniqueCounts(tb + fb)
 
-def classify(tree, observations, data_missing=False):
-    
+def classify(tree, observations, arr_y, data_missing=False):
+
     def withData(observations, tree):
         if (tree.results != None):
             return tree.results
@@ -143,19 +156,43 @@ def classify(tree, observations, data_missing=False):
                     else: branch = tree.false_branch
             return withMissingData(observations, branch)
 
-    if data_missing:
-        return classesText(withMissingData(observations, tree))
-    else: 
-        return classesText(withData(observations, tree))
+    print()
+    dataFunction = withMissingData if data_missing else withData
+    count, total = 0, len(observations)
+    resultText = []
 
-def classesText(object_key, line=True):
-    breakline = '\n' if line else ''
+    for x in range(total):
+        classified = classesText(dataFunction(observations[x], tree), '\t')
+        result = splitClassesText(classified)
+
+        if arr_y[x] == result[0][1]: count += 1
+        prob = lambda arr: arr[0][0]/np.sum([arr[x][0] for x in range(len(arr))])
+        text = "%s\t: %s (%s)\t~ %f" % (arr_y[x], result[0][1], result[0][0], prob(result)) 
+        resultText.append(text)
+        print(text)
+
+    text = "\nAccuracy: %s matched ~ %f\n" % (count, count/total)
+    resultText.append(text)
+    print(text)
+    return resultText
+
+def splitClassesText(string):
+    data = string.strip().replace(" (","***").replace(")","").replace("\t","").split(" ")
+    temp = []
+    for x in range(len(data)):
+        split = data[x].split("***")
+        arr = [int(split[1]), split[0]]
+        temp.append(arr)
+    temp.sort(key=lambda x: x[0], reverse=True)
+    return temp
+
+def classesText(object_key, breakline=''):
     return ''.join(['%s (%s) %s' % (key, object_key[key], breakline) for key in object_key])
 
 def plotText(decisionTree):
     def toString(decisionTree, indent=''):
         if (decisionTree.results != None):
-            return classesText(decisionTree.results, line=False)
+            return classesText(decisionTree.results)
         else:
             if (isinstance(decisionTree.value, int) or isinstance(decisionTree.value, float)):
                 decision = 'Attr %s: x >= %s?' % (decisionTree.col, decisionTree.value)
@@ -178,7 +215,7 @@ def plotDiagram(decisionTree, extension=None):
 
     def plotNodes(decisionTree, dot, route, identifier=0, color=cl_root):
         if (decisionTree.results != None):
-            dot.node(str(identifier), classesText(decisionTree.results), shape="egg", style="filled", color=cl_border, fillcolor=cl_leaf, fontcolor="white")
+            dot.node(str(identifier), classesText(decisionTree.results, '\n'), shape="egg", style="filled", color=cl_border, fillcolor=cl_leaf, fontcolor="white")
         else:
             decision = 'Attr %s: x >= %s ?' % (decisionTree.col, decisionTree.value)
             dot.node(str(identifier), decision, shape="box", style="filled", color=cl_border, fillcolor=color)

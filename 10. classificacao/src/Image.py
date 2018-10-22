@@ -3,12 +3,13 @@ import numpy as np
 import Utils as utl
 
 class Image():
-    def __init__(self, img=None, type="png", name="image", gray=False):
+    def __init__(self, img=None, type="png", name="image", normalize=False, gray=False):
         self.path = utl.Path()
         self.name = name
         self.type = type
         self.arr = None
         self.shapes = None
+        self.gray = gray
 
         if (isinstance(img, str)):
             self.name = img
@@ -17,14 +18,13 @@ class Image():
             self.arr = np.asarray(img, dtype=float)
 
         self.shapes = self.arr.shape
-        self.normalize()
-        if gray: self.imageToGray()
+        if normalize: self.normalize()
+        if self.gray: self.imageToGray()
 
-    def setImg(self, image, convert=False):
+    def setImg(self, image):
         self.arr = np.asarray(image, dtype=float)
         self.shapes = self.arr.shape
-        if convert:
-            self.imageToGray()
+        if self.gray: self.imageToGray()
 
     def show(self, mode="Greys_r"):
         plt.imshow(self.arr, cmap=mode)
@@ -217,16 +217,24 @@ class Image():
         return arr_copy
 
     def features(self):
-        n00 = self.momentCentral(self.arr, 0, 0)
-        n11 = self.momentCentral(self.arr, 1, 1) / (n00 ** 2)
-        n12 = self.momentCentral(self.arr, 1, 2) / (n00 ** 2.5)
-        n21 = self.momentCentral(self.arr, 2, 1) / (n00 ** 2.5)
-        n02 = self.momentCentral(self.arr, 0, 2) / (n00 ** 2)
-        n03 = self.momentCentral(self.arr, 0, 3) / (n00 ** 2.5)
-        n20 = self.momentCentral(self.arr, 2, 0) / (n00 ** 2)
-        n30 = self.momentCentral(self.arr, 3, 0) / (n00 ** 2.5)
+        if (len(self.shapes) == 3):
+            rgb = np.array([self.huMoments(self.arr[:,:,x]) for x in range(0,3)])
+            # standard = lambda arr: np.transpose(np.array(list((map(np.mean, arr.transpose())))))
+            return rgb.flatten()
+        else:
+            return self.huMoments(self.arr)
+
+    def huMoments(self, arr):
+        n00 = self.centralMoment(arr, 0, 0)
+        n11 = self.centralMoment(arr, 1, 1) / (n00 ** 2)
+        n12 = self.centralMoment(arr, 1, 2) / (n00 ** 2.5)
+        n21 = self.centralMoment(arr, 2, 1) / (n00 ** 2.5)
+        n02 = self.centralMoment(arr, 0, 2) / (n00 ** 2)
+        n03 = self.centralMoment(arr, 0, 3) / (n00 ** 2.5)
+        n20 = self.centralMoment(arr, 2, 0) / (n00 ** 2)
+        n30 = self.centralMoment(arr, 3, 0) / (n00 ** 2.5)
         
-        mi1 = n20 + n02
+        mi1 = (n20 + n02)
         mi2 = (n20 - n02)**2 + 4*((n11)**2)
         mi3 = (n30 - (3*n12))**2 + ((3*n21) - n03)**2
         mi4 = (n30 + n12)**2 + (n21 - n03)**2
@@ -236,7 +244,7 @@ class Image():
 
         return [mi1, mi2, mi3, mi4, mi5, mi6, mi7]
 
-    def momentCentral(self, arr, p, q):
+    def centralMoment(self, arr, p, q):
         momCen, momPQ = 0, [0, 0, 0]
 
         for y in range(arr.shape[0]):
