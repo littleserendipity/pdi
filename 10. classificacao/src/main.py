@@ -1,18 +1,21 @@
+from Utils import Data
+import Classification as cl
 import Image as im
 
 def main():
 
-    img = im.Image("Image_(1a)", type="jpg")
-    img.light(h=1, s=2, i=10)
-    img.save(extension="hsv_lighten")
+    # train_x, train_y, test_x, test_y, classes = Data().fetchFromH5('train_catvnoncat.h5', 'test_catvnoncat.h5')
+    # print("train_x's shape: " + str(train_x.shape))
+    # print("test_x's shape: " + str(test_x.shape))
 
-    img = im.Image("Image_(1b)", type="jpg")
-    img.light(h=1, s=1.5, i=0.4)
-    img.save(extension="hsv_darken_2")
+    training_data = Data().fetchFromCSV('example.csv')
+    tree = cl.growTree(training_data)
+    cl.plot(tree)
 
-    img = im.Image("Image_(2b)", type="jpg")
-    extension = img.clear(times=7, side=3, factor="rgb", median=True)
-    img.save(extension=extension)
+    cl.prune(tree, 0.5, notify=True)
+    cl.plot(tree)
+    
+    print('Classify:', cl.classify(tree, [6.0, 2.2, 5.0, 1.5]))
 
 if __name__ == '__main__':
     main()
