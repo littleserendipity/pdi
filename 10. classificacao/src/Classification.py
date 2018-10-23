@@ -157,18 +157,21 @@ def classify(tree, observations, arr_y, data_missing=False):
             return withMissingData(observations, branch)
 
     dataFunction = withMissingData if data_missing else withData
-    count, total = 0, len(observations)
+    total = len(observations)
+    match_count, prob_count = 0, 0
     result_text = ["Answer\t| Decision Tree"]
 
     for x in range(total):
         classified = classesText(dataFunction(observations[x], tree), '\t')
         result = splitClassesText(classified)
 
-        if arr_y[x] == result[0][1]: count += 1
-        prob = lambda arr: arr[0][0]/np.sum([arr[x][0] for x in range(len(arr))])
-        result_text.append("%s\t: %s (%s)\t~ %f" % (arr_y[x], result[0][1], result[0][0], prob(result)))
+        if arr_y[x] == result[0][1]: match_count += 1
+        probFunction = lambda arr: arr[0][0]/np.sum([arr[x][0] for x in range(len(arr))])
+        prob = probFunction(result)
+        prob_count += prob
+        result_text.append("%s\t: %s (%s)\t~ %f" % (arr_y[x], result[0][1], result[0][0], prob))
 
-    result_text.append("\nAccuracy: %s matched ~ %f\n" % (count, count/total))
+    result_text.append("\nAccuracy: %s matched, M ~ %f, E ~ %f\n" % (match_count, (match_count/total), 1-(prob_count/total)))
     return result_text
 
 def splitClassesText(string):

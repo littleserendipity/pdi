@@ -19,7 +19,7 @@ def main():
     decision_tree = cl.growTree(training_data, evaluation)
 
     cl.plotDiagram(decision_tree, extension=evaluation)
-    cl.prune(decision_tree, evaluation, 1)
+    cl.prune(decision_tree, evaluation, 0.75)
     cl.plotDiagram(decision_tree, extension=(evaluation+"_pruned"))
 
     test_data = cl.pre_organize(test_x, gray=True)
