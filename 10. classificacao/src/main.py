@@ -23,9 +23,11 @@ def main():
     cl.plotDiagram(decision_tree, extension=(evaluation+"_pruned"))
 
     test_data = cl.pre_organize(test_x, gray=True)
-    resultText = cl.classify(decision_tree, test_data, test_y)
 
-    Data().saveVariable(name="decision_tree", extension=(evaluation+"_classify_result"), value=resultText)
+    result_text = cl.classify(decision_tree, test_data, test_y)
+    print("\n%s" % "\n".join(result_text))
+
+    Data().saveVariable(name="decision_tree", extension=(evaluation+"_classify_result"), value=result_text)
 
 if __name__ == '__main__':
     main()

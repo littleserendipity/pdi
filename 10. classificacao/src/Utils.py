@@ -28,13 +28,13 @@ class Path():
 class Data():
     def saveVariable(self, name, extension, value):
         if (not isinstance(value, str)):
-            value = '\n'.join(value)
+            value = "\n".join(value)
         n = Path().getNameResult(name+".txt", extension)
         with open(Path().getPathSave(n), "w") as variable_file:
             variable_file.write(value)
 
     def fetchFromCSV(self, file_name):
-        reader = csv.reader(open(Path().getFileDir(file_name), 'rt'))
+        reader = csv.reader(open(Path().getFileDir(file_name), "rt"))
         return [[convertTypes(item) for item in row] for row in reader]
 
     def fetchFromH5(self, train_name, test_name):
