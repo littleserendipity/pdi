@@ -68,18 +68,20 @@ class Data():
     def fetchFromPath(self, path, set):
         path_list = Path().getListPath(Path().getFileDir(os.path.join(path, set)))
         txt = [x for x in path_list if (set in x and "txt" in x)][0]
-        folder = [x for x in path_list if "txt" not in x]
 
         classes = [line.rstrip('\n') for line in open(txt)]
         train_x, train_y = [], []
 
-        for y, item in enumerate(folder):
-            img_folder = Path().getListPath(item)
+        for y, item in enumerate(path_list):
+            try:
+                img_folder = Path().getListPath(item)
 
-            for _, img in enumerate(img_folder):
-                i = im.Image(img)
-                train_x.append(i.arr)    
-                train_y.append(classes[y])
+                for _, img in enumerate(img_folder):
+                    i = im.Image(img)
+                    train_x.append(i.arr)    
+                    train_y.append(classes[y])
+            except:
+                continue
 
         return train_x, train_y
 

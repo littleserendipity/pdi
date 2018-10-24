@@ -78,10 +78,9 @@ def growTree(rows, option):
 
         for value in columnValues:
             (set1, set2) = divideSet(rows, col, value)
-
-            # Gain -- Entropy or Gini
             p = float(len(set1)) / len(rows)
             gain = current_score - (p*evaluation(set1)) - ((1-p)*evaluation(set2))
+            
             if (gain > best_gain and len(set1) > 0 and len(set2) > 0):
                 best_gain = gain
                 best_attr = (col, value)
