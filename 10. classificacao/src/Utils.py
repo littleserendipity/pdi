@@ -2,6 +2,7 @@ import os
 import csv
 import h5py
 import numpy as np
+import Image as im
 
 class Path():
     def __init__(self):
@@ -24,6 +25,10 @@ class Path():
     def getPathSave(self, name):
         os.makedirs(self.results, exist_ok=True)
         return os.path.join(self.results, name)
+
+    def getListPath(self, path):
+        join = lambda x,y: os.path.join(x, y)
+        return [join(path,x) for x in os.listdir(path)]
 
 class Data():
     def saveVariable(self, name, extension, value):
@@ -52,13 +57,31 @@ class Data():
         train_x_flatten = train_set_x_orig.reshape(train_set_x_orig.shape[0], -1).T # The "-1" makes reshape flatten the remaining dimensions
         test_x_flatten = test_set_x_orig.reshape(test_set_x_orig.shape[0], -1).T    # Standardize data to have feature values between 0 and 1.
 
-        train_x = fetchH5toRGBImage(train_x_flatten.transpose()/255.)
-        test_x = fetchH5toRGBImage(test_x_flatten.transpose()/255.)
+        train_x = fetchH5toRGBImage(train_x_flatten.transpose())
+        test_x = fetchH5toRGBImage(test_x_flatten.transpose())
 
         train_y = arrayBool2String(train_set_y_orig, classes[0], classes[1])
         test_y = arrayBool2String(test_set_y_orig, classes[0], classes[1])
 
         return train_x, train_y, test_x, test_y
+
+    def fetchFromPath(self, path, set):
+        path_list = Path().getListPath(Path().getFileDir(os.path.join(path, set)))
+        txt = [x for x in path_list if (set in x and "txt" in x)][0]
+        folder = [x for x in path_list if "txt" not in x]
+
+        classes = [line.rstrip('\n') for line in open(txt)]
+        train_x, train_y = [], []
+
+        for y, item in enumerate(folder):
+            img_folder = Path().getListPath(item)
+
+            for _, img in enumerate(img_folder):
+                i = im.Image(img)
+                train_x.append(i.arr)    
+                train_y.append(classes[y])
+
+        return train_x, train_y
 
 def arrayBool2String(array, option1, option2):
     return list(map(lambda x: option1 if x else option2, array))

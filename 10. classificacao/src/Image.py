@@ -9,16 +9,22 @@ class Image():
         self.type = type
         self.arr = None
         self.shapes = None
+        self.normalize = normalize
         self.gray = gray
 
         if (isinstance(img, str)):
-            self.name = img
-            self.arr = np.array(plt.imread(self.path.getFileDir(self.name + "." + self.type)), dtype=float)
+            try:
+                self.name = img.split(".")[0]
+                self.type = img.split(".")[1]
+                self.arr = np.array(plt.imread(self.path.getFileDir(img)), dtype=float)
+            except:
+                self.name = img
+                self.arr = np.array(plt.imread(self.path.getFileDir(self.name + "." + self.type)), dtype=float)
         else:
             self.arr = np.asarray(img, dtype=float)
 
         self.shapes = self.arr.shape
-        if normalize: self.normalize()
+        if self.normalize: self.norm()
         if self.gray: self.imageToGray()
 
     def setImg(self, image):
@@ -38,7 +44,7 @@ class Image():
         if (len(self.arr.shape) == 3):
             self.setImg(np.array(np.dot(self.arr[...,:3], [0.299, 0.587, 0.114]), dtype=float))
 
-    def normalize(self):
+    def norm(self):
         self.arr = np.divide(self.arr, 255) 
 
     def light(self, h=1, s=1, i=1):

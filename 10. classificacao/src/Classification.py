@@ -13,12 +13,12 @@ class Node():
         self.false_branch = false_branch
         self.results = results
 
-def pre_organize(imgs, arr_y=None, gray=False):
+def preProcess(imgs, arr_y=None, normalize=False, gray=False):
     arr = []
-    for j in range(len(imgs)):
-        i = im.Image(imgs[j], gray=gray)
+    for y, img in enumerate(imgs):
+        i = im.Image(img, normalize=normalize, gray=gray)
         fe = list(i.features())
-        if arr_y is not None: fe.append(arr_y[j])
+        if arr_y is not None: fe.append(arr_y[y])
         arr.append(fe)
     return arr
 
