@@ -26,9 +26,12 @@ class Path():
         os.makedirs(self.results, exist_ok=True)
         return os.path.join(self.results, name)
 
-    def getListPath(self, path):
-        join = lambda x,y: os.path.join(x, y)
-        return [join(path,x) for x in os.listdir(path)]
+    def getFiles(self, path, folders=True):
+        index = 1 if folders else 2
+        return [os.path.join(path,x) for x in next(os.walk(Path().getFileDir(path)))[index]]
+
+    def getFilesWithResources(self, folders):
+        return [self.getFileDir(item) for x, item in enumerate(folders)]
 
 class Data():
     def saveVariable(self, name, extension, value):
@@ -66,22 +69,22 @@ class Data():
         return train_x, train_y, test_x, test_y
 
     def fetchFromPath(self, path, set):
-        path_list = Path().getListPath(Path().getFileDir(os.path.join(path, set)))
-        txt = [x for x in path_list if (set in x and "txt" in x)][0]
+        folders = Path().getFiles(os.path.join(path, set), True)
+        files = Path().getFiles(os.path.join(path, set), False)
 
-        classes = [line.rstrip('\n') for line in open(txt)]
+        filesWithResources = Path().getFilesWithResources(files)
+        foldersWithResources = Path().getFilesWithResources(folders)
+
+        classes = [line.rstrip('\n') for line in open(filesWithResources[0])]
         train_x, train_y = [], []
 
-        for y, item in enumerate(path_list):
-            try:
-                img_folder = Path().getListPath(item)
+        for y, item in enumerate(foldersWithResources):
+            imgs = Path().getFiles(item, False)
 
-                for _, img in enumerate(img_folder):
-                    i = im.Image(img)
-                    train_x.append(i.arr)    
-                    train_y.append(classes[y])
-            except:
-                continue
+            for _, img in enumerate(imgs):
+                i = im.Image(img)
+                train_x.append(i.arr)    
+                train_y.append(classes[y])
 
         return train_x, train_y
 
