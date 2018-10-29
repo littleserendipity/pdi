@@ -24,7 +24,7 @@ class Edge(object):
 
     def laplaceofGaussian(self, image, line=True):
         img = copy.deepcopy(image)
-        img.clear(times=img.noise)
+        img.clear()
 
         G_x = img.convolve(self.sobel_x)
         G_y = img.convolve(self.sobel_y)
@@ -63,7 +63,7 @@ class Thresholding(object):
             img = Edge().laplaceofGaussian(image)
             img.setImg(np.multiply(image.arr, img.arr))
         else:
-            img.clear(times=img.noise)
+            img.clear()
 
         hist = self.hist.getValues(img.arr)
         total = (img.shapes[0] * img.shapes[1])

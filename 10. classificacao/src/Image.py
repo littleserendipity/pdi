@@ -266,6 +266,14 @@ class Image():
                 momCen += ((x - moment[0])**p) * ((y - moment[1])**q) * arr[y, x]
         return momCen
 
+    def bbox(self):
+        img = (self.arr == 0)
+        rows = np.any(img, axis=1)
+        cols = np.any(img, axis=0)
+        y_min, y_max = np.argmax(rows), img.shape[0] - 1 - np.argmax(np.flipud(rows))
+        x_min, x_max = np.argmax(cols), img.shape[1] - 1 - np.argmax(np.flipud(cols))
+        return [y_min, y_max, x_min, x_max]
+
 class Histogram():
     def __init__(self):
         self.path = utl.Path()

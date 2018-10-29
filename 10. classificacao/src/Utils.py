@@ -28,7 +28,7 @@ class Path():
 
     def getFiles(self, path, folders=True):
         index = 1 if folders else 2
-        return [os.path.join(path,x) for x in next(os.walk(Path().getFileDir(path)))[index]]
+        return np.sort([os.path.join(path,x) for x in next(os.walk(Path().getFileDir(path)))[index]])
 
     def getFilesWithResources(self, folders):
         return [self.getFileDir(item) for x, item in enumerate(folders)]

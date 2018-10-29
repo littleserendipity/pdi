@@ -7,3 +7,4 @@ Projeto e listas da cadeira PDI - POLI (2018.2)
     matplotlib
     h5py
     graphviz
+    sklearn
