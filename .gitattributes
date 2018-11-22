@@ -1,0 +1,4 @@
+11.[[:space:]]Projeto/data/** filter=lfs diff=lfs merge=lfs -text
+11.[[:space:]]Projeto/out/** filter=lfs diff=lfs merge=lfs -text
+11.[[:space:]]Projeto/src/model/** filter=lfs diff=lfs merge=lfs -text
+11.[[:space:]]Projeto/doc/** filter=lfs diff=lfs merge=lfs -text
