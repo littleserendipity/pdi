@@ -1,10 +1,4 @@
-## Processamento Digital de Imagem
+# Processamento Digital de Imagens (PDI)
 
-Projeto e listas da cadeira PDI - POLI (2018.2)
-
-### Requisitos (modules)
-    pillow
-    matplotlib
-    h5py
-    graphviz
-    sklearn
+Listas e projeto da disciplina.<br />
+UPE - POLI (2018.2)
