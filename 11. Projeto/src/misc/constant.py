@@ -1,0 +1,7 @@
+DATA_FOLDER = "data"
+OUT_FOLDER = "out"
+MODEL_FOLDER = "model"
+DATASET = ""
+MODEL_CHECKPOINT = ""
+TXT_REPORT = ""
+IMAGE_SIZE = (256, 256)

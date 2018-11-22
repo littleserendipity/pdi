@@ -1,54 +1,36 @@
-from Utils import Data
-import DecisionTree as dt
+import misc.constant as const
+import argparse
+import os
 
 def main():
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--dataset", help="pass a dataset name to use", type=str)
+	parser.add_argument("--augmentation", help="process to data augmentation", action="store_true")
+	parser.add_argument("--train", help="train the NN", action="store_true")
+	parser.add_argument("--test", help="test the NN", action="store_true", default=True)
+	parser.add_argument("--gpu", help="select the GPU mode", action="store_true")
+	args = parser.parse_args()
 
-    ### PDI ~ C4.5
-    # train_x, train_y, test_x, test_y = Data().fetchFromH5('train_catvnoncat.h5', 'test_catvnoncat.h5')
-    # criterion = "entropy"
+	if (args.dataset):
+		const.DATASET = args.dataset
+		const.MODEL_CHECKPOINT = ("unet_%s.hdf5" % args.dataset)
+		const.TXT_REPORT = ("unet_%s.txt" % args.dataset)
 
-    # training_data = dt.preProcess(train_x, train_y, normalize=True, gray=True)
-    # decision_tree = dt.growTree(training_data, criterion)
+		os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+		os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+		os.environ["CUDA_VISIBLE_DEVICES"] = "0" if args.gpu else "-1"
 
-    # dt.plotDiagram(decision_tree, extension=criterion)
-    # dt.prune(decision_tree, criterion, 0.75)
-    # dt.plotDiagram(decision_tree, extension=(criterion+"_pruned"))
+		if (args.augmentation):
+			print("args.augmentation", args.augmentation)
 
-    # test_data = dt.preProcess(test_x, normalize=True, gray=True)
-    # result_text = dt.classify(decision_tree, test_data, test_y)
-    # print("\n%s" % "\n".join(result_text))
-    # Data().saveVariable(name="decision_tree", extension=(criterion+"_classify_result"), value=result_text)
+		elif (args.train):
+			print("args.train", args.train)
 
-    ### CI ~ C4.5
-    train_x, train_y = Data().fetchFromPath('characters', 't0')
-    test_x, test_y = Data().fetchFromPath('characters', 't1')
-    criterion = "entropy"
+		elif (args.test):
+			print("args.test", args.test)
 
-    training_data = dt.preProcess(train_x, train_y, norm=True, gray=True, seg=True)
-    decision_tree = dt.growTree(training_data, criterion)
-
-    dt.plotDiagram(decision_tree, extension=criterion)
-    # dt.prune(decision_tree, criterion, 0.5)
-    # dt.plotDiagram(decision_tree, extension=(criterion+"_pruned"))
-
-    test_data = dt.preProcess(test_x, norm=True, gray=True, seg=True)
-    result_text = dt.classify(decision_tree, test_data, test_y)
-    Data().saveVariable(name="decision_tree", extension=(criterion+"_classify_result"), value=result_text)
-    print("\n%s" % "\n".join(result_text))
-
-    ## CI ~ CART
-    # cart = dt.CART()
-    # train_x, train_y = Data().fetchFromPath('characters', 't0')
-    # test_x, test_y = Data().fetchFromPath('characters', 't1')
-
-    # training_data = dt.preProcess(train_x, train_y, norm=True, gray=True, seg=True)
-    # testing_data = dt.preProcess(test_x, test_y, norm=True, gray=True, seg=True)
-    # attr_names = ['i1','i2','i3','i4','i5','i6','i7']
-    
-    # cart.load(training_data, train_y, attr_names, testing_data)
-    # cart.train()
-    # cart.predict()
-    # cart.render(extension="CART")
+	else:
+		print("Pass a valid dataset name")
 
 if __name__ == '__main__':
-    main()
+	main()
