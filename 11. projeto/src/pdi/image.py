@@ -8,15 +8,15 @@ class Image():
         self.original = img
         self.matrix = None
 
-def histogram(arr):
-    h, w = len(arr), len(arr[0])
+def histogram(img):
+    h, w = len(img), len(img[0])
     hist = np.zeros(256, dtype=int)
 
     for y in range(h):
         for x in range(w):
-            hist[int(arr[y][x])] += 1
+            hist[int(img[y][x])] += 1
 
     return hist
 
-def otsu(arr):
-    return segmentation.otsu(arr)
+def otsu(img):
+    return segmentation.otsu(img)

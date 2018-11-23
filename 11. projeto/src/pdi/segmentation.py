@@ -1,12 +1,12 @@
 import pdi.image as im
 import numpy as np
 
-def otsu(arr):
-    if (np.max(arr) <= 1): 
-        arr = np.multiply(arr, 255)
+def otsu(img):
+    if (np.max(img) <= 1): 
+        img = np.multiply(img, 255)
 
-    hist = im.histogram(arr)
-    total = (len(arr) * len(arr[0]))
+    hist = im.histogram(img)
+    total = (len(img) * len(img[0]))
 
     current_max, threshold = 0, 0
     sumT, sumF, sumB = 0, 0, 0
@@ -34,6 +34,6 @@ def otsu(arr):
             current_max = varBetween
             threshold = i
 
-    arr[arr <= threshold] = 0
-    arr[arr > threshold] = 1
-    return np.array(arr, dtype=int)
+    img[img <= threshold] = 0
+    img[img > threshold] = 1
+    return np.array(img, dtype=int)
