@@ -1,26 +1,23 @@
 from keras.preprocessing.image import ImageDataGenerator
-import misc.constant as const
-import misc.path as path
+import control.constant as const
+import util.path as path
 import pdi.image as im
 import random
 
-def augmentation(batch):
+def augmentation(batch=1):
     batch_size = 1
     target_size = const.IMAGE_SIZE
     seed = int(random.random() * 100)
 
-    train_path = path.data(const.DATASET, const.F_TRAIN)
+    train_path = path.data(const.DATASET, const.dn_TRAIN)
 
-    image_folder = const.F_TRAIN_IMAGE
-    label_folder = const.F_TRAIN_LABEL
+    image_folder = image_save_prefix = const.dn_TRAIN_IMAGE
+    label_folder = label_save_prefix = const.dn_TRAIN_LABEL
 
-    image_to_dir = path.out("%s_%s" % (const.F_AUGMENTATION, const.DATASET), const.F_TRAIN_IMAGE)
-    label_to_dir = path.out("%s_%s" % (const.F_AUGMENTATION, const.DATASET), const.F_TRAIN_LABEL)
-
-    image_save_prefix = const.F_TRAIN_IMAGE
-    label_save_prefix = const.F_TRAIN_LABEL
+    image_to_dir = path.out("%s_%s" % (const.dn_AUGMENTATION, const.DATASET), const.dn_TRAIN_IMAGE)
+    label_to_dir = path.out("%s_%s" % (const.dn_AUGMENTATION, const.DATASET), const.dn_TRAIN_LABEL)
     
-    args = dict(
+    image_gen = label_gen = ImageDataGenerator(
         rotation_range=90, 
         width_shift_range=0.025,
         height_shift_range=0.025, 
@@ -31,9 +28,7 @@ def augmentation(batch):
         horizontal_flip=True,
         fill_mode="reflect")
 
-    image_gen = label_gen = ImageDataGenerator(**args)
-
-    batch1 = image_gen.flow_from_directory(
+    image_batch = image_gen.flow_from_directory(
         directory = train_path,
         classes = [image_folder],
         target_size = target_size,
@@ -42,7 +37,7 @@ def augmentation(batch):
         save_prefix = image_save_prefix,
         seed = seed)
 
-    batch2 = label_gen.flow_from_directory(
+    label_batch = label_gen.flow_from_directory(
         directory = train_path,
         classes = [label_folder],
         target_size = target_size,
@@ -51,7 +46,7 @@ def augmentation(batch):
         save_prefix = label_save_prefix,
         seed = seed)
 
-    for i, (_,_)  in enumerate(zip(batch1, batch2)): 
+    for i, (_,_)  in enumerate(zip(image_batch, label_batch)): 
         if (i >= batch-1): break
 
 def load_dataset():
