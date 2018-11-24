@@ -4,11 +4,24 @@ import control.constant as const
 import numpy as np
 import importlib
 
-def train():
-    arch = importlib.import_module("%s.%s" % (const.dn_ARCH, const.MODEL))
+class NeuralNetwork():
+    def __init__(self): 
+        self.arch = importlib.import_module("%s.%s" % (const.dn_ARCH, const.MODEL))
 
-    images = data.fetch_from_path(path.dn_train(const.dn_TRAIN_IMAGE), path.dn_aug(const.dn_TRAIN_IMAGE, mkdir=False))
-    labels = data.fetch_from_path(path.dn_train(const.dn_TRAIN_LABEL), path.dn_aug(const.dn_TRAIN_LABEL, mkdir=False))
+        self.fn_checkpoint = path.fn_checkpoint()
+        self.fn_logger = path.fn_logger()
+
+        self.dn_train_image = path.dn_train(const.dn_TRAIN_IMAGE)
+        self.dn_aug_image = path.dn_aug(const.dn_TRAIN_IMAGE, mkdir=False)
+
+        self.dn_train_label = path.dn_train(const.dn_TRAIN_LABEL)
+        self.dn_aug_label = path.dn_aug(const.dn_TRAIN_LABEL, mkdir=False)
+
+def train():
+    nn = NeuralNetwork()
+
+    images = data.fetch_from_path(nn.dn_train_image, nn.dn_aug_image)
+    labels = data.fetch_from_path(nn.dn_train_label, nn.dn_aug_label)
 
     t_images, g_labels, v_images, v_labels = misc.random_split_dataset(images, labels, const.p_VALIDATION)
     epochs, steps_per_epoch, validation_steps = misc.epochs_and_steps(len(t_images), len(v_images))
@@ -16,12 +29,13 @@ def train():
     generator = data.train_generator(t_images, g_labels)
     validation_data = data.train_generator(v_images, v_labels)
 
-    model = arch.model()
-    checkpoint = ModelCheckpoint(path.fn_checkpoint(), monitor='loss', verbose=1, save_best_only=True, save_weights_only=True)
-    logger = CSVLogger(path.fn_logger())
+    model = nn.arch.model()
+    checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor='loss', verbose=1, save_best_only=True, save_weights_only=True)
+    logger = CSVLogger(nn.fn_logger)
 
-    print("\ntrain_images:\t\t%s | epochs:\t%s | steps_per_epoch:\t%s" % (len(t_images), epochs, steps_per_epoch))
-    print("validation_images:\t%s | epochs:\t%s | validation_steps:\t%s\n" % (len(v_images), epochs, validation_steps))
+    print("\ntrain_images:\t\t%s | epochs:\t%s | steps_per_epoch:\t%s\n"
+        "validation_images:\t%s | epochs:\t%s | validation_steps:\t%s\n" 
+        % misc.str_center(len(t_images), epochs, steps_per_epoch, len(v_images), epochs, validation_steps))
 
     model.fit_generator(
         generator=generator,
@@ -33,4 +47,8 @@ def train():
         callbacks=[checkpoint, logger])
 
 def test():
+    nn = NeuralNetwork()
+
+
+
     print("test")

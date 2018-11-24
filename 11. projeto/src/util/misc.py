@@ -45,3 +45,14 @@ def divisors(n):
             divs.extend([i,n//i])
     divs.extend([n])
     return sorted(list(set(divs)))
+
+def str_center(*arr):
+    stringfy = lambda arr: [str(x) for x in arr]
+    max_length = lambda arr: len(max(arr, key=len))
+    padding = lambda arr, pad: [x.center(pad) for x in arr]
+
+    arr = stringfy(arr)
+    length = max_length(arr)
+    arr = padding(arr, length)
+
+    return tuple(arr)

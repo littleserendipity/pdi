@@ -2,7 +2,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from glob import glob
 from util import path, misc
 import control.constant as const
-import pdi.image as im
+import util.image as im
 import numpy as np
 import cv2
 
@@ -53,7 +53,7 @@ def augmentation(batch=1):
 
 def train_generator(images, labels):
     for (image, label) in zip(images, labels):
-        (image, label) = im.preprocessor(image), im.preprocessor(label)
+        (image, label) = im.preprocessor(image, label)
         yield (image, label)
 
 def fetch_from_path(file_dir, *d):
