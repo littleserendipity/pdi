@@ -16,8 +16,8 @@ def augmentation(batch=1):
     image_folder = image_save_prefix = const.dn_TRAIN_IMAGE
     label_folder = label_save_prefix = const.dn_TRAIN_LABEL
 
-    image_to_dir = path.out("%s_%s" % (const.dn_AUGMENTATION, const.DATASET), const.dn_TRAIN_IMAGE)
-    label_to_dir = path.out("%s_%s" % (const.dn_AUGMENTATION, const.DATASET), const.dn_TRAIN_LABEL)
+    image_to_dir = path.dn_aug(const.dn_TRAIN_IMAGE)
+    label_to_dir = path.dn_aug(const.dn_TRAIN_LABEL)
     
     image_gen = label_gen = ImageDataGenerator(
         rotation_range=90, 
@@ -56,9 +56,17 @@ def train_generator(images, labels):
         (image, label) = im.preprocessor(image), im.preprocessor(label)
         yield (image, label)
 
-def fetch_from_path(file_dir):
+def fetch_from_path(file_dir, *d):
     fetch = sorted(glob(path.join(file_dir, "*[0-9].*")))
     items = np.array([cv2.imread(item) for item in fetch])
+
+    try:
+        for x in d:
+            fetch = sorted(glob(path.join(x, "*[0-9].*")))
+            temp = np.array([cv2.imread(item) for item in fetch])
+            items = np.concatenate((items, temp))
+    except:
+        pass
 
     total = len(items)
     q = misc.round_up(total, 100) - total

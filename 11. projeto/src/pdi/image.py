@@ -26,10 +26,9 @@ def otsu(img):
     return segmentation.otsu(img)
 
 def preprocessor(image):
-    dsize = (const.IMAGE_SIZE[0], const.IMAGE_SIZE[1])
-
+    
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    image = cv2.resize(image, dsize)
+    image = cv2.resize(image, const.IMAGE_SIZE)
     image = otsu(image)
 
     image = np.reshape(image, image.shape+(1,))

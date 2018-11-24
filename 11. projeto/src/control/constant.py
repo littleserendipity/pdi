@@ -33,7 +33,7 @@ fn_LOGGER = ""
 MODEL = ""
 DATASET = ""
 
-IMAGE_SIZE = (256,256,1)
+IMAGE_SIZE = (256,256)
 p_VALIDATION = 0.1
 
 def setup(dt_set, dt_model, gpu):

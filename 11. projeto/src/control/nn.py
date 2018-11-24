@@ -7,8 +7,8 @@ import importlib
 def train():
     arch = importlib.import_module("%s.%s" % (const.dn_ARCH, const.MODEL))
 
-    images = data.fetch_from_path(path.dn_train(const.dn_TRAIN_IMAGE))
-    labels = data.fetch_from_path(path.dn_train(const.dn_TRAIN_LABEL))
+    images = data.fetch_from_path(path.dn_train(const.dn_TRAIN_IMAGE), path.dn_aug(const.dn_TRAIN_IMAGE, mkdir=False))
+    labels = data.fetch_from_path(path.dn_train(const.dn_TRAIN_LABEL), path.dn_aug(const.dn_TRAIN_LABEL, mkdir=False))
 
     t_images, g_labels, v_images, v_labels = misc.random_split_dataset(images, labels, const.p_VALIDATION)
     epochs, steps_per_epoch, validation_steps = misc.epochs_and_steps(len(t_images), len(v_images))

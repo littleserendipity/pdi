@@ -5,7 +5,7 @@ from keras.optimizers import Adam
 import control.constant as const
 
 def model(weights=None):
-    inputs = Input(const.IMAGE_SIZE)
+    inputs = Input((const.IMAGE_SIZE[0], const.IMAGE_SIZE[1], 1))
 
     conv1 = Conv2D(64, 3, activation="relu", padding="same", kernel_initializer="he_normal")(inputs)
     conv1 = Conv2D(64, 3, activation="relu", padding="same", kernel_initializer="he_normal")(conv1)
