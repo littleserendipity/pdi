@@ -1,9 +1,10 @@
 import numpy as np
+import math
 
 def random_split_dataset(images, labels, percent):
     v_images = list()
     v_labels = list()
-    validation_size = round(percent * len(images), -1)
+    validation_size = round_down(percent*len(images))
 
     t_images = list(images)
     g_labels = list(labels)
@@ -15,8 +16,32 @@ def random_split_dataset(images, labels, percent):
 
     return t_images, g_labels, v_images, v_labels
 
-def epochs_and_steps(g_total, v_total, percent):
-    epochs = int(np.ceil(percent*g_total))
-    steps_per_epoch = int(g_total/epochs)
-    validation_steps = int(v_total/epochs)
+def epochs_and_steps(g_total, v_total):
+    g_divisor, _ = middle_cdr(g_total, v_total)
+
+    epochs = g_total//g_divisor
+    steps_per_epoch = g_total//epochs
+    validation_steps = v_total//epochs
+
     return epochs, steps_per_epoch, validation_steps
+
+def round_up(x, digit=10):
+    return x if (x % digit == 0) else (x + digit) - (x % digit)
+
+def round_down(x):
+    x = int(x)
+    return round(x, 1-len(str(x)))
+
+def middle_cdr(a, b):
+    divisors_a = divisors(a)
+    divisors_b = divisors(b)
+    l = [[[i,j] for i in divisors_a if (a//i == b//j)] for j in divisors_b]
+    return l[len(l)//2][0]
+
+def divisors(n):
+    divs = [1]
+    for i in range(2,int(math.sqrt(n))+1):
+        if n%i == 0:
+            divs.extend([i,n//i])
+    divs.extend([n])
+    return sorted(list(set(divs)))

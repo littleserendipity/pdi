@@ -35,7 +35,6 @@ DATASET = ""
 
 IMAGE_SIZE = (256,256,1)
 p_VALIDATION = 0.1
-p_EPOCH = 0.02
 
 def setup(dt_set, dt_model, gpu):
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"

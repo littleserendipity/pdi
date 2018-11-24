@@ -11,7 +11,7 @@ def train():
     labels = data.fetch_from_path(path.dn_train(const.dn_TRAIN_LABEL))
 
     t_images, g_labels, v_images, v_labels = misc.random_split_dataset(images, labels, const.p_VALIDATION)
-    epochs, steps_per_epoch, validation_steps = misc.epochs_and_steps(len(t_images), len(v_images), const.p_EPOCH)
+    epochs, steps_per_epoch, validation_steps = misc.epochs_and_steps(len(t_images), len(v_images))
 
     generator = data.train_generator(t_images, g_labels)
     validation_data = data.train_generator(v_images, v_labels)
@@ -20,8 +20,8 @@ def train():
     checkpoint = ModelCheckpoint(path.fn_checkpoint(), monitor='loss', verbose=1, save_best_only=True, save_weights_only=True)
     logger = CSVLogger(path.fn_logger())
 
-    print("\nt_images: %s\tepochs: %s\tsteps_per_epoch: %s" % (len(t_images), epochs, steps_per_epoch))
-    print("v_images: %s\tepochs: %s\tsteps_per_epoch: %s\n" % (len(v_images), epochs, validation_steps))
+    print("\ntrain_images:\t\t%s | epochs:\t%s | steps_per_epoch:\t%s" % (len(t_images), epochs, steps_per_epoch))
+    print("validation_images:\t%s | epochs:\t%s | validation_steps:\t%s\n" % (len(v_images), epochs, validation_steps))
 
     model.fit_generator(
         generator=generator,

@@ -25,22 +25,14 @@ def otsu(img):
     # ret, th = cv2.threshold(gray, thresh, maxValue, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     return segmentation.otsu(img)
 
-def preprocessor(image, label):
+def preprocessor(image):
     dsize = (const.IMAGE_SIZE[0], const.IMAGE_SIZE[1])
 
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    label = cv2.cvtColor(label, cv2.COLOR_BGR2GRAY)
-
     image = cv2.resize(image, dsize)
-    label = cv2.resize(label, dsize)
-
     image = otsu(image)
-    label = otsu(label)
 
     image = np.reshape(image, image.shape+(1,))
     image = np.reshape(image,(1,)+image.shape)
 
-    label = np.reshape(label, label.shape+(1,))
-    label = np.reshape(label,(1,)+label.shape)
-
-    return image, label
+    return image
