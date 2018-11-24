@@ -2,12 +2,13 @@ from keras.preprocessing.image import ImageDataGenerator
 import control.constant as const
 import util.path as path
 import pdi.image as im
-import random
+import numpy as np
+import cv2
 
 def augmentation(batch=1):
     batch_size = 1
     target_size = const.IMAGE_SIZE
-    seed = int(random.random() * 100)
+    seed = int(np.random.rand(1)*100)
 
     train_path = path.data(const.DATASET, const.dn_TRAIN)
 
@@ -46,11 +47,18 @@ def augmentation(batch=1):
         save_prefix = label_save_prefix,
         seed = seed)
 
-    for i, (_,_)  in enumerate(zip(image_batch, label_batch)): 
+    for i, (_,_)  in enumerate(zip(image_batch, label_batch)):
         if (i >= batch-1): break
 
 def load_dataset():
-    return []
+    image = cv2.imread("../dataset/cracktile/train/image/001.png")
+    label = cv2.imread("../dataset/cracktile/train/label/001.png")
+    return [image,image,image,image,image,image], [label,label,label,label,label,label]
+
+def train_generator(images, labels):
+    for (image, label) in zip(images, labels):
+        (image, label) = im.preprocessor(image, label)
+        yield (image, label)
 
 def save(variable):
     return []
