@@ -34,6 +34,9 @@ def preprocessor(image, label):
     image = cv2.resize(image, dsize)
     label = cv2.resize(label, dsize)
 
+    image = otsu(image)
+    label = otsu(label)
+
     image = np.reshape(image, image.shape+(1,))
     image = np.reshape(image,(1,)+image.shape)
 

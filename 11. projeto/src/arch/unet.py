@@ -3,9 +3,8 @@ from keras.engine.training import Model
 from keras.layers import Conv2D, MaxPooling2D, Dropout, UpSampling2D, Concatenate
 from keras.optimizers import Adam
 import control.constant as const
-import os
 
-def model(checkpoint=None):
+def model(weights=None):
     inputs = Input(const.IMAGE_SIZE)
 
     conv1 = Conv2D(64, 3, activation="relu", padding="same", kernel_initializer="he_normal")(inputs)
@@ -55,7 +54,7 @@ def model(checkpoint=None):
     model = Model(inputs=inputs, outputs=conv10)
     model.compile(optimizer = Adam(lr = 1e-4), loss="binary_crossentropy", metrics = ["accuracy"])
 
-    if os.path.isfile(checkpoint):
-    	model.load_weights(checkpoint)
+    if weights:
+        model.load_weights(weights)
 
     return model

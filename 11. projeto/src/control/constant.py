@@ -2,6 +2,7 @@ import control.constant as const
 import os
 
 ''' Folder '''
+
 # > project level
 dn_DATA = "dataset"
 # >> data level
@@ -21,12 +22,14 @@ dn_ARCH = "arch"
 dn_MODEL = "model"
 
 ''' File '''
+
 # > src level
 # >> model level
 fn_CHECKPOINT = ""
-fn_REPORT = ""
+fn_LOGGER = ""
 
 ''' Information '''
+
 MODEL = ""
 DATASET = ""
 
@@ -40,5 +43,5 @@ def setup(dt_set, dt_model, gpu):
     os.environ["CUDA_VISIBLE_DEVICES"] = "0" if gpu else "-1"
 
     const.MODEL, const.DATASET = dt_model, dt_set
-    const.fn_CHECKPOINT = ("%s_%s.hdf5" % (dt_model, dt_set))
-    const.fn_REPORT = ("%s_%s.txt" % (dt_model, dt_set))
+    const.fn_CHECKPOINT = ("%s_%s_checkpoint.hdf5" % (dt_model, dt_set))
+    const.fn_LOGGER = ("%s_%s_logger.log" % (dt_model, dt_set))

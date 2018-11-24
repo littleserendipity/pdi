@@ -1,4 +1,5 @@
 from keras.preprocessing.image import ImageDataGenerator
+from glob import glob
 import control.constant as const
 import util.path as path
 import pdi.image as im
@@ -50,15 +51,12 @@ def augmentation(batch=1):
     for i, (_,_)  in enumerate(zip(image_batch, label_batch)):
         if (i >= batch-1): break
 
-def load_dataset():
-    image = cv2.imread("../dataset/cracktile/train/image/001.png")
-    label = cv2.imread("../dataset/cracktile/train/label/001.png")
-    return [image,image,image,image,image,image], [label,label,label,label,label,label]
-
 def train_generator(images, labels):
     for (image, label) in zip(images, labels):
         (image, label) = im.preprocessor(image, label)
         yield (image, label)
 
-def save(variable):
-    return []
+def fetch_from_path(file_dir):
+    fetch = sorted(glob(path.join(file_dir, "*[0-9].*")))
+    items = np.array([cv2.imread(item) for item in fetch])
+    return items
