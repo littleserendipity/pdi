@@ -67,14 +67,11 @@ def fetch_from_path(file_dir, *dirs, gen=True):
     fetch = sorted(glob(path.join(file_dir, "*[0-9].*")))
     items = np.array([read(item) for item in fetch])
 
-    try:
-        for x in dirs:
-            fetch = sorted(glob(path.join(x, "*[0-9].*")))
+    for x in dirs:
+        fetch = sorted(glob(path.join(x, "*[0-9].*")))
+        if (fetch):
             temp = np.array([read(item) for item in fetch])
             items = np.concatenate((items, temp))
-    except Exception as e:
-        print(e)
-        pass
 
     total = len(items)
     q = misc.round_up(total, 100) - total
