@@ -93,8 +93,9 @@ def fetch_from_path(file_dir, *dirs, gen=True):
 
 def save_predict(dir_save, arr_original, arr):
     for (i, image) in enumerate(arr):
-        path_save = path.join(dir_save, str(i), mkdir=True)
-        file_name = ("predict_%s.png" % (i))
+        number = ("%0.3d" % (i+1))
+        path_save = path.join(dir_save, str(number), mkdir=True)
+        file_name = ("predict_%s.png" % (number))
         file_save = path.join(path_save, file_name)
 
         image = im.posprocessor(arr_original[i], image[:,:,0])
