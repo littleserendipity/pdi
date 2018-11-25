@@ -1,7 +1,7 @@
-import argparse
+from util import path, data
 import control.constant as const
 import control.nn as nn
-import util.data as data
+import argparse
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -13,7 +13,9 @@ def main():
 	parser.add_argument("--gpu", help="select the GPU mode", action="store_true")
 	args = parser.parse_args()
 
-	if (args.dataset):
+	dn_dataset = path.data(args.dataset, mkdir=False)
+
+	if (args.dataset and path.exist(dn_dataset)):
 		const.setup(args.dataset, args.arch, args.gpu)
 
 		if (args.augmentation):
@@ -25,7 +27,7 @@ def main():
 		elif (args.test):
 			nn.test()
 	else:
-		print("Pass a valid dataset name")
+		print("\n>> Dataset not found (%s)" % dn_dataset)
 
 if __name__ == '__main__':
 	main()

@@ -13,11 +13,11 @@ def augmentation(batch=1):
 
     train_path = path.data(const.DATASET, const.dn_TRAIN)
 
-    image_folder = image_save_prefix = const.dn_TRAIN_IMAGE
-    label_folder = label_save_prefix = const.dn_TRAIN_LABEL
+    image_folder = image_save_prefix = const.dn_IMAGE
+    label_folder = label_save_prefix = const.dn_LABEL
 
-    image_to_dir = path.dn_aug(const.dn_TRAIN_IMAGE)
-    label_to_dir = path.dn_aug(const.dn_TRAIN_LABEL)
+    image_to_dir = path.dn_aug(const.dn_IMAGE)
+    label_to_dir = path.dn_aug(const.dn_LABEL)
     
     image_gen = label_gen = ImageDataGenerator(
         rotation_range=90, 
@@ -51,27 +51,35 @@ def augmentation(batch=1):
     for i, (_,_)  in enumerate(zip(image_batch, label_batch)):
         if (i >= batch-1): break
 
-def train_generator(images, labels):
+def train_prepare(images, labels):
     for (image, label) in zip(images, labels):
-        (image, label) = im.preprocessor(image, label)
+        (image, label) = im.preprocessor(image), im.preprocessor(label, label=True)
         yield (image, label)
 
-def fetch_from_path(file_dir, *d):
+def test_prepare(images):
+    for image in images:
+        image = im.preprocessor(image)
+        yield image
+
+def fetch_from_path(file_dir, *dirs, gen=True):
+    read = lambda x: cv2.resize(cv2.imread(x, 1), dsize=const.IMAGE_SIZE)
+
     fetch = sorted(glob(path.join(file_dir, "*[0-9].*")))
-    items = np.array([cv2.imread(item) for item in fetch])
+    items = np.array([read(item) for item in fetch])
 
     try:
-        for x in d:
+        for x in dirs:
             fetch = sorted(glob(path.join(x, "*[0-9].*")))
-            temp = np.array([cv2.imread(item) for item in fetch])
+            temp = np.array([read(item) for item in fetch])
             items = np.concatenate((items, temp))
-    except:
+    except Exception as e:
+        print(e)
         pass
 
     total = len(items)
     q = misc.round_up(total, 100) - total
 
-    if (q > 0):
+    if (gen and q > 0):
         temp_batch = ImageDataGenerator().flow(x=items, batch_size=q)
         temp, batch_index = [], 0
 
@@ -82,3 +90,15 @@ def fetch_from_path(file_dir, *d):
 
         items = np.concatenate((items, np.asarray(temp, dtype=np.uint8)))
     return items
+
+def save_predict(dir_save, arr_original, arr):
+    for (i, image) in enumerate(arr):
+        path_save = path.join(dir_save, str(i), mkdir=True)
+        file_name = ("predict_%s.png" % (i))
+        file_save = path.join(path_save, file_name)
+
+        image = im.posprocessor(arr_original[i], image[:,:,0])
+
+        ### sobreposição de resultado com original ###
+
+        im.imwrite(file_save, image)

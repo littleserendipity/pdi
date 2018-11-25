@@ -8,9 +8,9 @@ dn_DATA = "dataset"
 # >> data level
 dn_TEST = "test"
 dn_TRAIN = "train"
-# >>> train level
-dn_TRAIN_IMAGE = "image"
-dn_TRAIN_LABEL = "label"
+# >>> test and train level
+dn_IMAGE = "image"
+dn_LABEL = "label"
 
 # > project level
 dn_OUT = "out"

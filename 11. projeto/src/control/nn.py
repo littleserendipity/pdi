@@ -5,29 +5,32 @@ import numpy as np
 import importlib
 
 class NeuralNetwork():
-    def __init__(self): 
+    def __init__(self, test=False): 
         self.arch = importlib.import_module("%s.%s" % (const.dn_ARCH, const.MODEL))
 
         self.fn_checkpoint = path.fn_checkpoint()
         self.fn_logger = path.fn_logger()
 
-        self.dn_train_image = path.dn_train(const.dn_TRAIN_IMAGE)
-        self.dn_aug_image = path.dn_aug(const.dn_TRAIN_IMAGE, mkdir=False)
+        self.dn_IMAGE = path.dn_train(const.dn_IMAGE)
+        self.dn_aug_image = path.dn_aug(const.dn_IMAGE, mkdir=False)
 
-        self.dn_train_label = path.dn_train(const.dn_TRAIN_LABEL)
-        self.dn_aug_label = path.dn_aug(const.dn_TRAIN_LABEL, mkdir=False)
+        self.dn_LABEL = path.dn_train(const.dn_LABEL)
+        self.dn_aug_label = path.dn_aug(const.dn_LABEL, mkdir=False)
+
+        self.dn_test = path.dn_test()
+        self.dn_test_out = path.dn_test(out_dir=test, mkdir=False)
 
 def train():
     nn = NeuralNetwork()
 
-    images = data.fetch_from_path(nn.dn_train_image, nn.dn_aug_image)
-    labels = data.fetch_from_path(nn.dn_train_label, nn.dn_aug_label)
+    images = data.fetch_from_path(nn.dn_IMAGE, nn.dn_aug_image)
+    labels = data.fetch_from_path(nn.dn_LABEL, nn.dn_aug_label)
 
     t_images, g_labels, v_images, v_labels = misc.random_split_dataset(images, labels, const.p_VALIDATION)
     epochs, steps_per_epoch, validation_steps = misc.epochs_and_steps(len(t_images), len(v_images))
 
-    generator = data.train_generator(t_images, g_labels)
-    validation_data = data.train_generator(v_images, v_labels)
+    generator = data.train_prepare(t_images, g_labels)
+    validation_data = data.train_prepare(v_images, v_labels)
 
     model = nn.arch.model()
     checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor='loss', verbose=1, save_best_only=True, save_weights_only=True)
@@ -47,8 +50,15 @@ def train():
         callbacks=[checkpoint, logger])
 
 def test():
-    nn = NeuralNetwork()
+    nn = NeuralNetwork(test=True)
 
+    if (path.exist(nn.fn_checkpoint)):
+        model = nn.arch.model(nn.fn_checkpoint)
 
+        images = data.fetch_from_path(nn.dn_test, gen=False)
+        generator = data.test_prepare(images)
 
-    print("test")
+        results = model.predict_generator(generator, len(images), verbose=1)
+        data.save_predict(nn.dn_test_out, images, results)
+    else:
+        print("\n>> Model not found (%s)" % nn.fn_checkpoint)

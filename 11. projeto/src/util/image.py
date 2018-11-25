@@ -1,31 +1,27 @@
-from control.constant import IMAGE_SIZE
 import numpy as np
 import cv2
 
-def preprocessor(image, label):
-    return image_processing(image), label_processing(label)
-    
-def image_processing(image):
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    image = cv2.resize(image, IMAGE_SIZE)
-    image = otsu(image)
+def preprocessor(image, label=False):
+    image = np.divide(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), 255)
+
+    if label:
+        image = otsu(image)
+    else:
+        # image = otsu(image)
+        image[image <= 0.5] = 0
+        image[image > 0.5] = 1
+
+        ### arquitetura de PDI para as rachaduras ###
+
     return adjust_keras(image)
 
-def label_processing(label):
-    label[label<255] = 0
-    return adjust_keras(label)
+def posprocessor(image, result):
+    return otsu(result)
 
-def adjust_keras(image):
-    image = np.reshape(image, image.shape+(1,))
-    image = np.reshape(image,(1,)+image.shape)
-    return image
-
-def otsu(image):
+def otsu(arr):
     # ret, th = cv2.threshold(gray, thresh, maxValue, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
-    if (np.max(image) <= 1): 
-        image = np.multiply(image, 255)
-
+    image = get_im(arr)
     hist = histogram(image)
     total = (len(image) * len(image[0]))
 
@@ -57,7 +53,7 @@ def otsu(image):
 
     image[image <= threshold] = 0
     image[image > threshold] = 1
-    return np.array(image, dtype=int)
+    return image
 
 def histogram(image):
     h, w = len(image), len(image[0])
@@ -66,3 +62,18 @@ def histogram(image):
         for x in range(w):
             hist[int(image[y][x])] += 1
     return hist
+
+def imshow(name, image):
+    cv2.imshow(name, np.array(get_im(image), dtype=np.uint8))
+    cv2.waitKey(0)
+
+def imwrite(file_name, image):
+    cv2.imwrite(file_name, np.array(get_im(image), dtype=np.uint8))
+
+def get_im(image):
+    return np.multiply(image, 255) if (np.max(image) <= 1) else image
+
+def adjust_keras(image):
+    image = np.reshape(image, image.shape+(1,))
+    image = np.reshape(image,(1,)+image.shape)
+    return image
