@@ -56,3 +56,8 @@ def str_center(*arr):
     arr = padding(arr, length)
 
     return tuple(arr)
+
+def clip(arr, min_limit, max_limit):
+    arr[arr < min_limit] = min_limit
+    arr[arr > max_limit] = max_limit
+    return arr

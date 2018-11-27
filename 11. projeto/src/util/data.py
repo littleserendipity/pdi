@@ -62,15 +62,13 @@ def test_prepare(images):
         yield image
 
 def fetch_from_path(file_dir, *dirs, gen=True):
-    read = lambda x: cv2.resize(cv2.imread(x, 1), dsize=const.IMAGE_SIZE)
-
     fetch = sorted(glob(path.join(file_dir, "*[0-9].*")))
-    items = np.array([read(item) for item in fetch])
+    items = np.array([cv2.imread(item, 1) for item in fetch])
 
     for x in dirs:
         fetch = sorted(glob(path.join(x, "*[0-9].*")))
         if (fetch):
-            temp = np.array([read(item) for item in fetch])
+            temp = np.array([cv2.imread(item, 1) for item in fetch])
             items = np.concatenate((items, temp))
 
     total = len(items)
@@ -91,11 +89,11 @@ def fetch_from_path(file_dir, *dirs, gen=True):
 def save_predict(dir_save, arr_original, arr):
     for (i, image) in enumerate(arr):
         number = ("%0.3d" % (i+1))
-        path_save = path.join(dir_save, str(number), mkdir=True)
+        path_save = path.join(dir_save, mkdir=True)
         file_name = ("predict_%s.png" % (number))
         file_save = path.join(path_save, file_name)
 
-        image = im.posprocessor(arr_original[i], image[:,:,0])
+        image = im.posprocessor(arr_original[i], image)
 
         ### sobreposição de resultado com original ###
 

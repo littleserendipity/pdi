@@ -36,9 +36,8 @@ def train():
     checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor='loss', verbose=1, save_best_only=True, save_weights_only=True)
     logger = CSVLogger(nn.fn_logger)
 
-    print("\ntrain_images:\t\t%s | epochs:\t%s | steps_per_epoch:\t%s\n"
-        "validation_images:\t%s | epochs:\t%s | validation_steps:\t%s\n" 
-        % misc.str_center(len(t_images), epochs, steps_per_epoch, len(v_images), epochs, validation_steps))
+    print("\nepochs:%s\ntrain size:\t\t%s |\tsteps_per_epoch: \t%s\nvalidation size:\t%s |\tvalidation_steps:\t%s\n" 
+        % misc.str_center(epochs, len(t_images), steps_per_epoch, len(v_images), validation_steps))
 
     model.fit_generator(
         generator=generator,
