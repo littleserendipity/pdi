@@ -3,43 +3,40 @@ import util.misc as misc
 import numpy as np
 import cv2
 
-def preprocessor(image, label=False):
+def preprocessor(image, label=None):
     image = cv2.resize(image, dsize=const.IMAGE_SIZE)
 
     image = equalize_light(image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    if label:
-        image = threshold(image, min_limit=254)
-    else:
-        black_level = back_in_black(image)
+    black_level = back_in_black(image)
 
-        image = gauss_filter(image, (5,5))
-        image = light(image, bright=-30, contrast=-30)
-        
-        if not black_level:
-            image = cv2.bitwise_not(image)
-
-        kernel = np.ones((5,5), np.uint8)
-        mask = cv2.erode(image, kernel, iterations=1)
-        mask = cv2.dilate(mask, kernel, iterations=1)
-        
-        image = np.subtract(image, mask)
+    image = gauss_filter(image, (5,5))
+    image = light(image, bright=-30, contrast=-30)
+    
+    if not black_level:
         image = cv2.bitwise_not(image)
 
-        image = median_filter(image, 3)
-        image = threshold(image, clip=3)
+    kernel = np.ones((5,5), np.uint8)
+    mask = cv2.erode(image, kernel, iterations=1)
+    mask = cv2.dilate(mask, kernel, iterations=1)
+    
+    image = np.subtract(image, mask)
+    image = cv2.bitwise_not(image)
 
-        # image = gauss_filter(image, (3,3))
-        # image = median_filter(image, 3)
-        # image = threshold(image, min_limit=127)
+    image = median_filter(image, 3)
+    image = threshold(image, clip=3)
 
-    return image_to_keras(image)
+    if (label is not None):
+        label = cv2.resize(label, dsize=const.IMAGE_SIZE)
+        label = cv2.cvtColor(label, cv2.COLOR_BGR2GRAY)
+        label = threshold(label, min_limit=254)
 
-def posprocessor(image, result):
-    result = keras_to_image(result)
-    result = cv2.resize(result, image.shape[:2][::-1])
-    return threshold(result, clip=3)
+    return (image, label)
+    
+def posprocessor(original, result):
+    result = cv2.resize(result, original.shape[:2][::-1])
+    return result
 
 def light(image, bright, contrast):
     bright = bright * 1.2
@@ -48,21 +45,12 @@ def light(image, bright, contrast):
     image = misc.clip(image, 0, 255)
     return np.uint8(image)
 
-# def equalize_hist(image):
-#     image = cv2.equalizeHist(image)
-#     return np.uint8(image)
-
 def threshold(image, min_limit=None, max_limit=255, clip=0):
     if min_limit is None:
         min_limit = int(np.mean(image) - clip)
 
     _, image = cv2.threshold(image, min_limit, max_limit, cv2.THRESH_BINARY)
     return np.uint8(image)
-
-# def blur(image, kernel=(3,3), iterations=1):
-#     for _ in range(iterations):
-#         image = cv2.blur(image, kernel)
-#     return np.uint8(image)
 
 def gauss_filter(image, kernel=(3,3), iterations=1):
     for _ in range(iterations):
@@ -77,6 +65,10 @@ def median_filter(image, kernel=3, iterations=1):
 # def edges(image, threshold1=250, threshold2=350, kernel=3):
 #     image = cv2.Canny(image, threshold1, threshold2, kernel)
 #     image = cv2.bitwise_not(image)
+#     return np.uint8(image)
+
+# def equalize_hist(image):
+#     image = cv2.equalizeHist(image)
 #     return np.uint8(image)
 
 def equalize_light(image, limit=3, grid=(7,7)):

@@ -16,8 +16,12 @@ def random_split_dataset(images, labels, percent):
 
     return t_images, g_labels, v_images, v_labels
 
-def epochs_and_steps(g_total, v_total):
-    g_divisor, _ = middle_cdr(g_total, v_total)
+def epochs_and_steps(g_total, v_total=None):
+    if (v_total == 0):
+        g_divisor = int(g_total * 0.1)
+        v_total = 0
+    else:
+        g_divisor, _ = middle_cdr(g_total, v_total)
 
     epochs = g_total//g_divisor
     steps_per_epoch = g_total//epochs
