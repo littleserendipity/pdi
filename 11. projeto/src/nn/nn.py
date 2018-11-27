@@ -1,11 +1,11 @@
 from keras.callbacks import ModelCheckpoint, EarlyStopping, CSVLogger
-from control import generator as gen, constant as const
-from util import path, data, misc
+from util import path, data, misc, generator as gen
+import setting.constant as const
 import importlib
 
 class NeuralNetwork():
     def __init__(self, test=False): 
-        self.arch = importlib.import_module("%s.%s" % (const.dn_ARCH, const.MODEL))
+        self.arch = importlib.import_module("%s.%s.%s" % (const.dn_NN, const.dn_ARCH, const.MODEL))
         self.model = self.arch.model()
         self.loaded = False
 
@@ -22,7 +22,7 @@ class NeuralNetwork():
         self.dn_test_out = path.dn_test(out_dir=test, mkdir=False)
 
         if (path.exist(self.fn_checkpoint)):
-            print("%s loaded" % self.fn_checkpoint)
+            print("Loaded: %s\n" % self.fn_checkpoint)
             self.model.load_weights(self.fn_checkpoint)
             self.loaded = True
 
@@ -37,29 +37,24 @@ def train():
 
     if (q > 0):
         del images, labels
-        print("\nDataset augmentation (90 increase) is necessary (only once)")
+        print("Dataset augmentation (%s increase) is necessary (only once)" % q)
         gen.augmentation(q)
 
         images = data.fetch_from_path(nn.dn_IMAGE, nn.dn_aug_image)
         labels = data.fetch_from_path(nn.dn_LABEL, nn.dn_aug_label)
     
-    if const.VALIDATION:
-        images, labels, v_images, v_labels = misc.random_split_dataset(images, labels, const.p_VALIDATION)
-        validation_data = data.train_prepare(v_images, v_labels)
-        early_monitor = "val_loss" 
-    else:
-        v_images = []
-        validation_data = None
-        early_monitor = "loss" 
-
+    images, labels, v_images, v_labels = misc.random_split_dataset(images, labels, const.p_VALIDATION)
+    
     generator = data.train_prepare(images, labels)
+    validation_data = data.train_prepare(v_images, v_labels)
+
     epochs, steps_per_epoch, validation_steps = misc.epochs_and_steps(len(images), len(v_images))
 
-    print("\nepochs: %s\ntrain size:\t\t%s |\tsteps_per_epoch: \t%s\nvalidation size:\t%s |\tvalidation_steps:\t%s\n" 
-        % misc.str_center(epochs, len(images), steps_per_epoch, len(v_images), validation_steps))
+    print("Train size:\t\t%s |\tSteps_per_epoch: \t%s\nValidation size:\t%s |\tValidation_steps:\t%s\n" 
+        % misc.str_center(len(images), steps_per_epoch, len(v_images), validation_steps))
 
-    checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor='loss', verbose=1, save_best_only=True)
-    early_stopping = EarlyStopping(monitor=early_monitor, min_delta=1e-4, patience=5, verbose=1, restore_best_weights=True, mode='auto')
+    checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor='loss', verbose=1, save_best_only=True, save_weights_only=True)
+    early_stopping = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=5, verbose=1, restore_best_weights=True)
     logger = CSVLogger(nn.fn_logger)
 
     nn.model.fit_generator(

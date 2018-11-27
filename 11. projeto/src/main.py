@@ -1,43 +1,38 @@
-from control import nn, generator, constant
-from util import path, data
+from setting import environment, constant
+from util import path, generator
+from nn import nn
 import argparse
 
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--tolabel", help="Preprocess images to create labels (out/tolabel)", action="store_true", default=False)
-	parser.add_argument("--dataset", help="Dataset name", type=str)
-	parser.add_argument("--arch", help="Neural Network architecture", type=str, default="unet")
 	parser.add_argument("--augmentation", help="Dataset augmentation (pass quantity)", type=int)
-	parser.add_argument("--train", help="Train", action="store_true")
-	parser.add_argument("--validation", help="Enable validation step", action="store_true", default=True)
+	parser.add_argument("--dataset", help="Dataset name", type=str, default=constant.DATASET)
+	parser.add_argument("--train", help="Train", action="store_true", default=False)
 	parser.add_argument("--test", help="Predict", action="store_true", default=True)
-	parser.add_argument("--gpu", help="Enable GPU mode", action="store_true")
+	parser.add_argument("--arch", help="Neural Network architecture", type=str, default=constant.MODEL)
+	parser.add_argument("--pdi", help="Method for image processing", type=str, default=constant.IMG_PROCESSING)
+	parser.add_argument("--gpu", help="Enable GPU mode", action="store_true", default=False)
 	args = parser.parse_args()
 
+	environment.setup(args)
+	exist = lambda x: len(x)>0 and path.exist(path.data(x, mkdir=False))
+
 	if (args.tolabel):
-		dn_tolabel = path.out(constant.dn_TOLABEL, mkdir=False)
+		generator.tolabel()
 
-		if path.exist(dn_tolabel):
-			generator.tolabel()
-		else:
-			print("\n>> Folder not found (%s)\n" % dn_tolabel)
+	elif args.dataset is not None and exist(args.dataset):
 
-	elif (args.dataset is not None):
-		dn_dataset = path.data(args.dataset, mkdir=False)
+		if (args.augmentation):
+			generator.augmentation(args.augmentation)
 
-		if (path.exist(dn_dataset)):
-			constant.setup(args)
-
-			if (args.augmentation):
-				generator.augmentation(args.augmentation)
-
-			elif (args.train):
-				nn.train()
-				
-			elif (args.test):
-				nn.test()
+		elif (args.train):
+			nn.train()
+			
+		elif (args.test):
+			nn.test()
 	else:
 		print("\n>> Dataset not found\n")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 	main()

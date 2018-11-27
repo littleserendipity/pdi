@@ -1,4 +1,4 @@
-import control.constant as const
+import setting.constant as const
 import os
 
 ''' Path '''

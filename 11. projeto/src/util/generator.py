@@ -1,6 +1,7 @@
 from keras.preprocessing.image import ImageDataGenerator
-from util import path, data, image as im
-import control.constant as const
+from util import path, data
+from pdi import pdi, image as im
+import setting.constant as const
 import numpy as np
 
 def augmentation(n=1):
@@ -49,13 +50,19 @@ def augmentation(n=1):
         if (i >= n-1): break
 
 def tolabel():
-    dir_save = path.out(const.dn_TOLABEL)
-    images = data.fetch_from_path(dir_save)
+    dn_tolabel = path.out(const.dn_TOLABEL, mkdir=False)
 
-    for (i, image) in enumerate(images):
-        path_save = path.join(dir_save, "label", mkdir=True)
-        file_name = ("%0.3d.png" % (i))
-        file_save = path.join(path_save, file_name)
+    if path.exist(dn_tolabel):
+        
+        dir_save = path.out(const.dn_TOLABEL)
+        images = data.fetch_from_path(dir_save)
 
-        img_pp, _ = im.preprocessor(image, None)
-        im.imwrite(file_save, img_pp)
+        for (i, image) in enumerate(images):
+            path_save = path.join(dir_save, "label", mkdir=True)
+            file_name = ("%0.3d.png" % (i+1))
+            file_save = path.join(path_save, file_name)
+
+            img_pp, _ = pdi.preprocessor(image, None)
+            data.imwrite(file_save, img_pp)
+    else:
+    	print("\n>> Folder not found (%s)\n" % dn_tolabel)

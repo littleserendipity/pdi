@@ -2,7 +2,7 @@ from keras.models import Input
 from keras.engine.training import Model
 from keras.layers import Conv2D, MaxPooling2D, Dropout, UpSampling2D, Concatenate
 from keras.optimizers import Adam
-import control.constant as const
+import setting.constant as const
 
 def model():
     inputs = Input((const.IMAGE_SIZE[0], const.IMAGE_SIZE[1], 1))

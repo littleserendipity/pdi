@@ -1,5 +1,15 @@
 import numpy as np
-import math
+
+def keras_to_image(image):
+    image = image[:,:,0]
+    image = np.clip(image, 0, 1)
+    return np.multiply(image, 255)
+
+def image_to_keras(image):
+    image = np.reshape(image, image.shape+(1,))
+    image = np.reshape(image,(1,)+image.shape)
+    image = np.clip(image, 0, 255)
+    return np.divide(image, 255)
 
 def random_split_dataset(images, labels, percent):
     v_images = list()
@@ -43,7 +53,7 @@ def middle_cdr(a, b):
 
 def divisors(n):
     divs = [1]
-    for i in range(2,int(math.sqrt(n))+1):
+    for i in range(2,int(np.sqrt(n))+1):
         if n%i == 0:
             divs.extend([i,n//i])
     divs.extend([n])
@@ -59,8 +69,3 @@ def str_center(*arr):
     arr = padding(arr, length)
 
     return tuple(arr)
-
-def clip(arr, min_limit, max_limit):
-    arr[arr < min_limit] = min_limit
-    arr[arr > max_limit] = max_limit
-    return arr
