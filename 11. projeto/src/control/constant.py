@@ -36,7 +36,7 @@ DATASET = ""
 MODEL = ""
 IMAGE_SIZE = (256,256)
 
-VALIDATION = False
+VALIDATION = True
 p_VALIDATION = 0.1
 
 def setup(args):

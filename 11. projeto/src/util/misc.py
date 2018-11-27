@@ -16,16 +16,15 @@ def random_split_dataset(images, labels, percent):
 
     return t_images, g_labels, v_images, v_labels
 
-def epochs_and_steps(g_total, v_total=None):
-    if (v_total == 0):
-        g_divisor = int(g_total * 0.1)
-        v_total = 0
+def epochs_and_steps(len_data, len_validation=None):
+    if (len_validation == 0):
+        g_divisor = int(len_data * 0.1)
     else:
-        g_divisor, _ = middle_cdr(g_total, v_total)
+        g_divisor = middle_cdr(len_data, len_validation)
 
-    epochs = g_total//g_divisor
-    steps_per_epoch = g_total//epochs
-    validation_steps = v_total//epochs
+    epochs = len_data//g_divisor
+    steps_per_epoch = len_data//epochs
+    validation_steps = len_validation//epochs
 
     return epochs, steps_per_epoch, validation_steps
 
@@ -40,7 +39,7 @@ def middle_cdr(a, b):
     divisors_a = divisors(a)
     divisors_b = divisors(b)
     l = [[[i,j] for i in divisors_a if (a//i == b//j)] for j in divisors_b]
-    return l[len(l)//2][0]
+    return l[len(l)//2][0][0]
 
 def divisors(n):
     divs = [1]
