@@ -3,7 +3,7 @@ DATASET = "cracktile"
 MODEL = "unet"
 IMG_PROCESSING = "cracktile"
 
-IMAGE_SIZE = (256,256)
+IMAGE_SIZE = (256,256,1)
 p_VALIDATION = 0.1
 
 

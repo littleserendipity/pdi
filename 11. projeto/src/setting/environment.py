@@ -1,4 +1,5 @@
 import setting.constant as const
+import importlib
 import os
 
 def setup(args):
@@ -12,6 +13,9 @@ def setup(args):
 
     const.fn_CHECKPOINT = ("%s_%s_%s" % (const.MODEL, const.DATASET, const.fn_CHECKPOINT))
     const.fn_LOGGER = ("%s_%s_%s" % (const.MODEL, const.DATASET, const.fn_LOGGER))
+
+    arch = importlib.import_module("%s.%s.%s" % (const.dn_NN, const.dn_ARCH, const.MODEL))
+    const.IMAGE_SIZE = arch.IMAGE_SIZE
 
     print("\n##################")
     print("Arch:", const.MODEL)

@@ -6,7 +6,7 @@ import numpy as np
 
 def augmentation(n=1):
     batch_size = 1
-    target_size = const.IMAGE_SIZE
+    target_size = const.IMAGE_SIZE[:2]
     seed = int(np.random.rand(1)*100)
 
     train_path = path.data(const.DATASET, const.dn_TRAIN)
