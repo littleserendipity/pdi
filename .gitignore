@@ -111,5 +111,9 @@ dmypy.json
 .vscode
 .directory
 
-data/words
-words*
+aug/
+tolabel/
+
+*.h5
+*.hdf5
+*.log
