@@ -48,8 +48,8 @@ def round_down(x):
 def middle_cdr(a, b):
     divisors_a = divisors(a)
     divisors_b = divisors(b)
-    l = [[[i,j] for i in divisors_a if (a//i == b//j)] for j in divisors_b]
-    return l[len(l)//2][0][0]
+    l = [(i, j) for i in divisors_a for j in divisors_b if (a//i == b//j)]
+    return l[len(l)//2][0]
 
 def divisors(n):
     divs = [1]
