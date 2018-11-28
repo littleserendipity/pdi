@@ -33,4 +33,4 @@ def label_preprocessor(label):
 
 def posprocessor(image):
     ### TO DEFINE
-    return image
+    return im.threshold(image)

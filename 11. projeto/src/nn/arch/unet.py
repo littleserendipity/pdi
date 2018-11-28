@@ -31,22 +31,22 @@ def model():
     drop5 = Dropout(0.5)(conv5)
 
     up6 = Conv2D(512, 2, activation="relu", padding="same", kernel_initializer="he_normal")(UpSampling2D(size = (2,2))(drop5))
-    merge6 = Concatenate(axis = 3)([drop4,up6])
+    merge6 = Concatenate(axis=3)([drop4,up6])
     conv6 = Conv2D(512, 3, activation="relu", padding="same", kernel_initializer="he_normal")(merge6)
     conv6 = Conv2D(512, 3, activation="relu", padding="same", kernel_initializer="he_normal")(conv6)
 
     up7 = Conv2D(256, 2, activation="relu", padding="same", kernel_initializer="he_normal")(UpSampling2D(size = (2,2))(conv6))
-    merge7 = Concatenate(axis = 3)([conv3,up7])
+    merge7 = Concatenate(axis=3)([conv3,up7])
     conv7 = Conv2D(256, 3, activation="relu", padding="same", kernel_initializer="he_normal")(merge7)
     conv7 = Conv2D(256, 3, activation="relu", padding="same", kernel_initializer="he_normal")(conv7)
 
     up8 = Conv2D(128, 2, activation="relu", padding="same", kernel_initializer="he_normal")(UpSampling2D(size = (2,2))(conv7))
-    merge8 = Concatenate(axis = 3)([conv2,up8])
+    merge8 = Concatenate(axis=3)([conv2,up8])
     conv8 = Conv2D(128, 3, activation="relu", padding="same", kernel_initializer="he_normal")(merge8)
     conv8 = Conv2D(128, 3, activation="relu", padding="same", kernel_initializer="he_normal")(conv8)
 
     up9 = Conv2D(64, 2, activation="relu", padding="same", kernel_initializer="he_normal")(UpSampling2D(size = (2,2))(conv8))
-    merge9 = Concatenate(axis = 3)([conv1,up9])
+    merge9 = Concatenate(axis=3)([conv1,up9])
     conv9 = Conv2D(64, 3, activation="relu", padding="same", kernel_initializer="he_normal")(merge9)
     conv9 = Conv2D(64, 3, activation="relu", padding="same", kernel_initializer="he_normal")(conv9)
     conv9 = Conv2D(2, 3, activation="relu", padding="same", kernel_initializer="he_normal")(conv9)
@@ -54,6 +54,6 @@ def model():
     conv10 = Conv2D(1, 1, activation="sigmoid")(conv9)
 
     model = Model(inputs=inputs, outputs=conv10)
-    model.compile(optimizer = Adam(lr = 1e-4), loss="binary_crossentropy", metrics = ["accuracy"])
+    model.compile(optimizer=Adam(lr=1e-4), loss="binary_crossentropy", metrics=["accuracy"])
 
     return model

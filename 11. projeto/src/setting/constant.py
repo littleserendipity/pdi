@@ -4,8 +4,12 @@ MODEL = "unet"
 IMG_PROCESSING = "cracktile"
 
 IMAGE_SIZE = (256,256,1)
-p_VALIDATION = 0.1
+p_VALIDATION = 0.2
 
+MIN_DELTA = 1e-4
+PATIENCE = 5
+### Monitor: loss, acc, val_loss, val_acc
+MONITOR = "loss"
 
 ''' Folder '''
 # > project level
@@ -34,7 +38,6 @@ dn_PDI = "pdi"
 dn_PROCESSING = "processing"
 
 dn_MODEL = "model"
-
 
 ''' File '''
 # > src level

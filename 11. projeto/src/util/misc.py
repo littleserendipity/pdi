@@ -39,7 +39,7 @@ def epochs_and_steps(len_data, len_validation=None):
     return epochs, steps_per_epoch, validation_steps
 
 def round_up(x, digit=10):
-    return x if (x % digit == 0) else (x + digit) - (x % digit)
+    return int(x) if (x % digit == 0) else int((x + digit) - (x % digit))
 
 def round_down(x):
     x = int(x)
@@ -49,7 +49,8 @@ def middle_cdr(a, b):
     divisors_a = divisors(a)
     divisors_b = divisors(b)
     l = [(i, j) for i in divisors_a for j in divisors_b if (a//i == b//j)]
-    return l[len(l)//2][0]
+    index = int((len(l)//2) + 1)
+    return l[index][0]
 
 def divisors(n):
     divs = [1]

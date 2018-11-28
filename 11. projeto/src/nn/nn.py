@@ -53,18 +53,46 @@ def train():
     print("Train size:\t\t%s |\tSteps_per_epoch: \t%s\nValidation size:\t%s |\tValidation_steps:\t%s\n" 
         % misc.str_center(len(images), steps_per_epoch, len(v_images), validation_steps))
 
-    checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor='loss', verbose=1, save_best_only=True, save_weights_only=True)
-    early_stopping = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=5, verbose=1, restore_best_weights=True)
-    logger = CSVLogger(nn.fn_logger)
+    loop, past_monitor, patience = 0, float('inf'), const.PATIENCE
 
-    nn.model.fit_generator(
-        generator=generator,
-        steps_per_epoch=steps_per_epoch,
-        epochs=epochs,
-        validation_steps=validation_steps,
-        validation_data=validation_data,
-        use_multiprocessing=True,
-        callbacks=[checkpoint, early_stopping, logger])
+    checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor=const.MONITOR, save_best_only=True, save_weights_only=True, verbose=1)
+    early_stopping = EarlyStopping(monitor=const.MONITOR, mode="max", min_delta=const.MIN_DELTA, patience=patience, restore_best_weights=True, verbose=1)
+    logger = CSVLogger(nn.fn_logger, append=True)
+
+    while True:
+        loop += 1
+        h = nn.model.fit_generator(
+            generator=generator,
+            steps_per_epoch=steps_per_epoch,
+            epochs=epochs,
+            validation_steps=validation_steps,
+            validation_data=validation_data,
+            use_multiprocessing=True,
+            callbacks=[checkpoint, early_stopping, logger])
+
+        val_monitor = h.history[const.MONITOR]
+        
+        if ("loss" in const.MONITOR):
+            val_monitor = min(val_monitor)
+            improve = (past_monitor - val_monitor)
+        else:
+            val_monitor = max(val_monitor)
+            improve = (val_monitor - past_monitor)
+
+        print("\n##################")
+        print("Finished epoch (%s) with val_monitor: %f" % (loop, val_monitor))
+
+        if (abs(improve) == float("inf") or improve > const.MIN_DELTA):
+            print("Improved from %f to %f" % (past_monitor, val_monitor))
+            past_monitor = val_monitor
+            patience = const.PATIENCE
+        elif (patience > 0):
+            patience -= 1
+            print("Did not improve from %f" % (past_monitor))
+            print("Current patience: %s" % (patience))
+        else:
+            break
+        print("##################\n")
 
 def test():
     nn = NeuralNetwork(test=True)
