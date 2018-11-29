@@ -4,7 +4,7 @@ import importlib
 import cv2
 
 def preprocessor(image, label=None):
-    pp = importlib.import_module("%s.%s.%s" % (const.dn_PDI, const.dn_PROCESSING, const.IMG_PROCESSING))
+    pp = importlib.import_module("%s.%s.%s" % (const.dn_DIP, const.dn_PROCESSING, const.IMG_PROCESSING))
 
     image = cv2.resize(image, dsize=const.IMAGE_SIZE[:2])
     image = pp.image_preprocessor(image)
@@ -16,7 +16,7 @@ def preprocessor(image, label=None):
     return (image, label)
 
 def posprocessor(original, image):
-    pp = importlib.import_module("%s.%s.%s" % (const.dn_PDI, const.dn_PROCESSING, const.IMG_PROCESSING))
+    pp = importlib.import_module("%s.%s.%s" % (const.dn_DIP, const.dn_PROCESSING, const.IMG_PROCESSING))
 
     image = cv2.resize(image, original.shape[:2][::-1])
 

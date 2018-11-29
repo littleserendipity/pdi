@@ -8,7 +8,7 @@ def image_preprocessor(image):
 
     black_level = im.back_in_black(image)
 
-    image = im.gauss_filter(image, (5,5))
+    image = im.gauss_filter(image, (3,3))
     image = im.light(image, bright=-30, contrast=-30)
     
     if not black_level:
@@ -32,5 +32,4 @@ def label_preprocessor(label):
     return label
 
 def posprocessor(image):
-    ### TO DEFINE
     return im.threshold(image)

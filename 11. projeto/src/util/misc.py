@@ -1,12 +1,16 @@
 import numpy as np
 
 def random_split_dataset(images, labels, percent):
-    v_images = list()
-    v_labels = list()
+    v_images, v_labels = list(), list()
     validation_size = round_down(percent*len(images))
 
-    t_images = list(images)
-    g_labels = list(labels)
+    index_shuffle = np.arange(0, len(images), 1)
+    np.random.shuffle(index_shuffle)
+
+    for index in index_shuffle:
+        t_images = list(images[index]) 
+        g_labels = list(labels[index])
+    del images, labels
 
     while (len(v_images) < validation_size):
         index = int(np.random.randint(len(t_images), size=1))

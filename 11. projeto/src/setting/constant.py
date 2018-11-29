@@ -33,8 +33,8 @@ dn_NN = "nn"
 # >> NN level
 dn_ARCH = "arch"
 
-dn_PDI = "pdi"
-# >> PDI level
+dn_DIP = "dip"
+# >> DIP level
 dn_PROCESSING = "processing"
 
 dn_MODEL = "model"

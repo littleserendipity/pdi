@@ -109,9 +109,9 @@ def train():
             past_monitor = val_monitor
             patience = const.PATIENCE
         elif (patience > 0):
-            patience -= 1
             print("Did not improve from %f" % (past_monitor))
             print("Current patience: %s" % (patience))
+            patience -= 1
         else:
             break
         print("##################\n")

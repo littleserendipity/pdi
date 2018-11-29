@@ -18,7 +18,7 @@ def setup(args):
     const.IMAGE_SIZE = arch.IMAGE_SIZE
 
     print("\n##################")
-    print("Arch:", const.MODEL)
     print("Dataset:", const.DATASET)
-    print("DIP:", const.IMG_PROCESSING)
+    print("DIP:\t", const.IMG_PROCESSING)
+    print("Arch:\t", const.MODEL)
     print("##################\n")

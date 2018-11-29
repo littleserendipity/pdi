@@ -18,16 +18,16 @@ def augmentation(n=1):
     label_to_dir = path.dn_aug(const.dn_LABEL)
     
     image_gen = label_gen = ImageDataGenerator(
+        # rotation_range=45,
+        # fill_mode="reflect",
         rescale = 1/255,
-        rotation_range=80,
-        width_shift_range=0.025,
-        height_shift_range=0.025, 
-        channel_shift_range=0.025,
-        shear_range=0.025,
-        zoom_range=0.025,
+        width_shift_range=0.05,
+        height_shift_range=0.05, 
+        channel_shift_range=0.02,
+        shear_range=0.02,
+        zoom_range=0.02,
         vertical_flip=True,
-        horizontal_flip=True,
-        fill_mode="constant")
+        horizontal_flip=True)
 
     image_batch = image_gen.flow_from_directory(
         directory = train_path,
