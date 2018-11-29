@@ -59,7 +59,7 @@ def train():
 
     if (q > 0):
         del images, labels
-        print("Dataset augmentation (%s increase) is necessary (only once)" % q)
+        print("Dataset augmentation (%s increase) is necessary (only once)\n" % q)
         gen.augmentation(q)
 
         images = data.fetch_from_path(nn.dn_IMAGE, nn.dn_aug_image)
