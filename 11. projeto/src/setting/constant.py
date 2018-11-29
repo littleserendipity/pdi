@@ -7,7 +7,7 @@ IMAGE_SIZE = (256,256,1)
 p_VALIDATION = 0.2
 
 MIN_DELTA = 1e-4
-PATIENCE = 5
+PATIENCE = 3
 ### Monitor: loss, acc, val_loss, val_acc
 MONITOR = "loss"
 

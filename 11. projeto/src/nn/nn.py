@@ -78,7 +78,7 @@ def train():
     loop, past_monitor, patience = 0, float('inf'), const.PATIENCE
 
     checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor=const.MONITOR, save_best_only=True, save_weights_only=True, verbose=1)
-    early_stopping = EarlyStopping(monitor=const.MONITOR, min_delta=const.MIN_DELTA, patience=patience, restore_best_weights=True, verbose=1)
+    early_stopping = EarlyStopping(monitor=const.MONITOR, min_delta=const.MIN_DELTA, patience=(patience*2), restore_best_weights=True, verbose=1)
     logger = CSVLogger(nn.fn_logger, append=True)
 
     while True:
