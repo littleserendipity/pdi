@@ -9,7 +9,7 @@ def setup(args):
 
     const.MODEL = args.arch
     const.DATASET = args.dataset
-    const.IMG_PROCESSING = args.pdi
+    const.IMG_PROCESSING = args.dip
 
     const.fn_CHECKPOINT = ("%s_%s_%s" % (const.MODEL, const.DATASET, const.fn_CHECKPOINT))
     const.fn_LOGGER = ("%s_%s_%s" % (const.MODEL, const.DATASET, const.fn_LOGGER))
@@ -20,5 +20,5 @@ def setup(args):
     print("\n##################")
     print("Arch:", const.MODEL)
     print("Dataset:", const.DATASET)
-    print("PDI:", const.IMG_PROCESSING)
+    print("DIP:", const.IMG_PROCESSING)
     print("##################\n")

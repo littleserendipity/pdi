@@ -1,6 +1,6 @@
 from keras.preprocessing.image import ImageDataGenerator
 from util import path, data
-from pdi import pdi, image as im
+from dip import dip, image as im
 import setting.constant as const
 import numpy as np
 
@@ -63,7 +63,7 @@ def tolabel():
             file_name = ("%0.3d.png" % (i+1))
             file_save = path.join(path_save, file_name)
 
-            img_pp, _ = pdi.preprocessor(image, None)
+            img_pp, _ = dip.preprocessor(image, None)
             data.imwrite(file_save, img_pp)
     else:
     	print("\n>> Folder not found (%s)\n" % dn_tolabel)

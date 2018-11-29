@@ -1,4 +1,4 @@
-import pdi.image as im
+import dip.image as im
 import numpy as np
 import cv2
 

@@ -1,6 +1,6 @@
 from keras.callbacks import ModelCheckpoint, EarlyStopping, CSVLogger
 from util import path, data, misc, generator as gen
-from pdi import pdi
+from dip import dip
 import setting.constant as const
 import importlib
 import sys
@@ -32,11 +32,11 @@ class NeuralNetwork():
     def prepare_data(self, images, labels=None):
         if (labels is None):
             for image in images:
-                image, _ = pdi.preprocessor(image, None)
+                image, _ = dip.preprocessor(image, None)
                 yield self.arch.prepare_input(image)
         else:
             for (image, label) in zip(images, labels):
-                (image, label) = pdi.preprocessor(image, label)
+                (image, label) = dip.preprocessor(image, label)
                 yield self.arch.prepare_input(image), self.arch.prepare_input(label)
 
     def save_predict(self, dir_save, arr_original, arr):
@@ -46,7 +46,7 @@ class NeuralNetwork():
             file_name = ("predict_%s.png" % (number))
             file_save = path.join(path_save, file_name)
 
-            image = pdi.posprocessor(arr_original[i], self.arch.prepare_output(image))
+            image = dip.posprocessor(arr_original[i], self.arch.prepare_output(image))
             data.imwrite(file_save, image)
 
 def train():
