@@ -2,13 +2,13 @@ from keras.models import Input
 from keras.engine.training import Model
 from keras.layers import Conv2D, MaxPooling2D, Dropout, UpSampling2D, Concatenate
 from keras.optimizers import Adam
-import setting.constant as const
+import numpy as np
 
 IMAGE_SIZE = (256,256,1)
 
-def model():
-    inputs = Input(IMAGE_SIZE)
+def model(weights_input=None):
 
+    inputs = Input(IMAGE_SIZE)
     conv1 = Conv2D(64, 3, activation="relu", padding="same", kernel_initializer="he_normal")(inputs)
     conv1 = Conv2D(64, 3, activation="relu", padding="same", kernel_initializer="he_normal")(conv1)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
@@ -56,4 +56,18 @@ def model():
     model = Model(inputs=inputs, outputs=conv10)
     model.compile(optimizer=Adam(lr=1e-4), loss="binary_crossentropy", metrics=["accuracy"])
 
+    if weights_input:
+        model.load_weights(weights_input)
+
     return model
+
+def prepare_input(image):
+    image = np.reshape(image, image.shape+(1,))
+    image = np.reshape(image,(1,)+image.shape)
+    image = np.clip(image, 0, 255)
+    return np.divide(image, 255)
+
+def prepare_output(image):
+    image = image[:,:,0]
+    image = np.clip(image, 0, 1)
+    return np.multiply(image, 255)

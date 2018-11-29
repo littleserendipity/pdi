@@ -9,7 +9,7 @@ def main():
 	parser.add_argument("--augmentation", help="Dataset augmentation (pass quantity)", type=int)
 	parser.add_argument("--dataset", help="Dataset name", type=str, default=constant.DATASET)
 	parser.add_argument("--train", help="Train", action="store_true", default=False)
-	parser.add_argument("--test", help="Predict", action="store_true", default=True)
+	parser.add_argument("--test", help="Predict", action="store_true", default=False)
 	parser.add_argument("--arch", help="Neural Network architecture", type=str, default=constant.MODEL)
 	parser.add_argument("--pdi", help="Method for image processing", type=str, default=constant.IMG_PROCESSING)
 	parser.add_argument("--gpu", help="Enable GPU mode", action="store_true", default=False)
