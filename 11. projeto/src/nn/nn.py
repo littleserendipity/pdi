@@ -24,7 +24,8 @@ class NeuralNetwork():
 
         try:
             self.model = self.arch.model(self.has_checkpoint)
-            print("Loaded: %s\n" % self.fn_checkpoint)            
+            if (self.has_checkpoint):
+                print("Loaded: %s\n" % self.fn_checkpoint)
         except Exception as e:
             sys.exit("\nError loading: %s\n%s\n" % (self.fn_checkpoint, str(e)))
 
@@ -125,4 +126,4 @@ def test():
         results = nn.model.predict_generator(generator, len(images), verbose=1)
         nn.save_predict(nn.dn_test_out, images, results)
     else:
-        print("\n>> Model not found (%s)\n" % nn.fn_checkpoint)
+        print(">> Model not found (%s)\n" % nn.fn_checkpoint)
