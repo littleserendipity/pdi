@@ -11,9 +11,8 @@ def overlay(image, layer):
 
     layer[np.where((layer == [0,0,0,255]).all(axis=2))] = const.SEGMENTATION_COLOR + [255]
     layer[np.where((layer == [255,255,255,255]).all(axis=2))] = const.BACKGROUND_COLOR + [255]
-
-    over = cv2.addWeighted(image, 0.5, layer, 0.5, 0)
-    return over
+    layer = cv2.addWeighted(image, 0.6, layer, 0.4, 0)
+    return layer
 
 def light(image, bright, contrast):
     bright = bright * 1.2

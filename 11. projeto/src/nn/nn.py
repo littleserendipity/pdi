@@ -33,10 +33,10 @@ class NeuralNetwork():
         if (labels is None):
             for (i, image) in enumerate(images):
                 number = ("%0.3d" % (i+1))
-                path_save = path.join(self.dn_test_out, number, mkdir=True)
+                path_save = path.join(self.dn_test_out, mkdir=True)
 
                 image, _ = dip.preprocessor(image, None)
-                original_name = ("1_preprocessing_%s.png" % (number))
+                original_name = (const.fn_PREPROCESSING % (number))
                 data.imwrite(path.join(path_save, original_name), image)
 
                 yield self.arch.prepare_input(image)
@@ -48,19 +48,19 @@ class NeuralNetwork():
     def save_predict(self, original, image):
         for (i, image) in enumerate(image):
             number = ("%0.3d" % (i+1))
-            path_save = path.join(self.dn_test_out, number, mkdir=True)
+            path_save = path.join(self.dn_test_out, mkdir=True)
 
-            image_name = ("2_predict_%s.png" % (number))
+            image_name = (const.fn_PREDICT % (number))
             image = dip.posprocessor(original[i], self.arch.prepare_output(image))
             data.imwrite(path.join(path_save, image_name), image)
 
-            original_name = ("3_original_%s.png" % (number))
+            original_name = (const.fn_ORIGINAL % (number))
             data.imwrite(path.join(path_save, original_name), original[i])
 
             txt = ("Image %s was approximately %f segmented" % (number, ((image == 0).sum()/image.size)))
-            open(path.join(path_save, const.fn_SEGMENTATION), 'w').write(txt)
+            open(path.join(path_save, (const.fn_SEGMENTATION % (number))), 'w').write(txt)
 
-            overlay_name = ("4_overlay_%s.png" % (number))
+            overlay_name = (const.fn_OVERLAY % (number))
             overlay = dip.overlay(original[i], image)
             data.imwrite(path.join(path_save, overlay_name), overlay)
 

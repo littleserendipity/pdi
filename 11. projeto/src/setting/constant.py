@@ -5,11 +5,11 @@ MODEL = "unet"
 IMAGE_SIZE = (256,256,1)
 
 ### Blue, Green, Red
-BACKGROUND_COLOR = [224, 120, 110]
-SEGMENTATION_COLOR = [30, 30, 200]
+BACKGROUND_COLOR = [255, 120, 110]
+SEGMENTATION_COLOR = [0, 0, 255]
 
 p_VALIDATION = 0.2
-MIN_DELTA = 1e-6
+MIN_DELTA = 1e-5
 PATIENCE = 6
 ### Monitor: loss, acc, val_loss, val_acc
 MONITOR = "val_loss"
@@ -43,8 +43,15 @@ dn_PROCESSING = "processing"
 dn_MODEL = "model"
 
 ''' File '''
+# > out level
+# %s : number file
+fn_PREPROCESSING = "%s_1_preprocessing.png"
+fn_PREDICT = "%s_2_predict.png"
+fn_ORIGINAL = "%s_3_original.png"
+fn_OVERLAY = "%s_4_overlay.png"
+fn_SEGMENTATION = "%s_5_result.txt"
+
 # > src level
 # >> model level
 fn_CHECKPOINT = "checkpoint.hdf5"
 fn_LOGGER = "logger.log"
-fn_SEGMENTATION = "result.txt"
