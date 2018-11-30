@@ -1,5 +1,19 @@
+import setting.constant as const
 import numpy as np
 import cv2
+
+def overlay(image, layer):
+    if (len(layer.shape) == 2):
+        layer = cv2.cvtColor(layer, cv2.COLOR_GRAY2BGR)
+    
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2BGRA)
+    layer = cv2.cvtColor(layer, cv2.COLOR_BGR2BGRA)
+
+    layer[np.where((layer == [0,0,0,255]).all(axis=2))] = const.SEGMENTATION_COLOR + [255]
+    layer[np.where((layer == [255,255,255,255]).all(axis=2))] = const.BACKGROUND_COLOR + [255]
+
+    over = cv2.addWeighted(image, 0.5, layer, 0.5, 0)
+    return over
 
 def light(image, bright, contrast):
     bright = bright * 1.2
@@ -25,14 +39,11 @@ def median_filter(image, kernel=3, iterations=1):
         image = cv2.medianBlur(image, kernel, 0)
     return np.uint8(image)
 
-def equalize_light(image, limit=3, grid=(7,7)):
-    try:
-        gray = True
+def equalize_light(image, limit=3, grid=(7,7), gray=False):
+    if (len(image.shape) == 2):
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-    except:
-        gray = False
-        pass
-
+        gray = True
+    
     clahe = cv2.createCLAHE(clipLimit=limit, tileGridSize=grid)
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
@@ -41,7 +52,8 @@ def equalize_light(image, limit=3, grid=(7,7)):
     limg = cv2.merge((cl,a,b))
 
     image = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
-    if gray: image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    if gray: 
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     return np.uint8(image)
 

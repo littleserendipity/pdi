@@ -1,23 +1,30 @@
 import numpy as np
 
 def random_split_dataset(images, labels, percent):
-    t_images, t_labels = [], [] 
     v_images, v_labels = [], []
+    t_images, t_labels = shuffle(images, labels)
     validation_size = round_down(percent*len(images))
-
-    index_shuffle = np.arange(0, len(images), 1)
-    np.random.shuffle(index_shuffle)
-
-    for index in index_shuffle:
-        t_images.append(images[index])
-        t_labels.append(labels[index])
 
     while (len(v_images) < validation_size):
         index = int(np.random.randint(len(t_images), size=1))
         v_images.append(t_images.pop(index))
         v_labels.append(t_labels.pop(index))
 
+    t_images, t_labels = shuffle(t_images, t_labels)
+    v_images, v_labels = shuffle(v_images, v_labels)
+
     return t_images, t_labels, v_images, v_labels
+
+def shuffle(arr1, arr2):
+    new_arr1, new_arr2 = [], []
+    index_shuffle = np.arange(0, len(arr1), 1)
+    np.random.shuffle(index_shuffle)
+
+    for index in index_shuffle:
+        new_arr1.append(arr1[index])
+        new_arr2.append(arr2[index])
+
+    return new_arr1, new_arr2
 
 def epochs_and_steps(len_data, len_validation=None):
     if (len_validation == 0):

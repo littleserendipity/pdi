@@ -31,23 +31,38 @@ class NeuralNetwork():
 
     def prepare_data(self, images, labels=None):
         if (labels is None):
-            for image in images:
+            for (i, image) in enumerate(images):
+                number = ("%0.3d" % (i+1))
+                path_save = path.join(self.dn_test_out, number, mkdir=True)
+
                 image, _ = dip.preprocessor(image, None)
+                original_name = ("2_preprocessing_%s.png" % (number))
+                data.imwrite(path.join(path_save, original_name), image)
+
                 yield self.arch.prepare_input(image)
         else:
             for (image, label) in zip(images, labels):
                 (image, label) = dip.preprocessor(image, label)
                 yield self.arch.prepare_input(image), self.arch.prepare_input(label)
 
-    def save_predict(self, dir_save, arr_original, arr):
-        for (i, image) in enumerate(arr):
+    def save_predict(self, original, image):
+        for (i, image) in enumerate(image):
             number = ("%0.3d" % (i+1))
-            path_save = path.join(dir_save, mkdir=True)
-            file_name = ("predict_%s.png" % (number))
-            file_save = path.join(path_save, file_name)
+            path_save = path.join(self.dn_test_out, number, mkdir=True)
 
-            image = dip.posprocessor(arr_original[i], self.arch.prepare_output(image))
-            data.imwrite(file_save, image)
+            original_name = ("1_original_%s.png" % (number))
+            data.imwrite(path.join(path_save, original_name), original[i])
+            
+            image_name = ("3_predict_%s.png" % (number))
+            image = dip.posprocessor(original[i], self.arch.prepare_output(image))
+            data.imwrite(path.join(path_save, image_name), image)
+
+            txt = ("Image %s was approximately %f segmented" % (number, ((image == 0).sum()/image.size)))
+            open(path.join(path_save, const.fn_SEGMENTATION), 'w').write(txt)
+
+            overlay_name = ("4_overlay_%s.png" % (number))
+            overlay = dip.overlay(original[i], image)
+            data.imwrite(path.join(path_save, overlay_name), overlay)
 
 def train():
     nn = NeuralNetwork()
@@ -84,6 +99,7 @@ def train():
     while True:
         loop += 1
         h = nn.model.fit_generator(
+            shuffle=True,
             generator=generator,
             steps_per_epoch=steps_per_epoch,
             epochs=epochs,
@@ -124,6 +140,6 @@ def test():
         generator = nn.prepare_data(images)
 
         results = nn.model.predict_generator(generator, len(images), verbose=1)
-        nn.save_predict(nn.dn_test_out, images, results)
+        nn.save_predict(images, results)
     else:
         print(">> Model not found (%s)\n" % nn.fn_checkpoint)

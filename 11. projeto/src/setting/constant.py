@@ -2,14 +2,17 @@
 DATASET = "cracktile"
 IMG_PROCESSING = "cracktile"
 MODEL = "unet"
-
 IMAGE_SIZE = (256,256,1)
-p_VALIDATION = 0.2
 
+### Blue, Green, Red
+SEGMENTATION_COLOR = [30, 30, 200]
+BACKGROUND_COLOR = [200, 80, 80]
+
+p_VALIDATION = 0.2
 MIN_DELTA = 1e-4
-PATIENCE = 3
+PATIENCE = 5
 ### Monitor: loss, acc, val_loss, val_acc
-MONITOR = "loss"
+MONITOR = "val_loss"
 
 ''' Folder '''
 # > project level
@@ -44,3 +47,4 @@ dn_MODEL = "model"
 # >> model level
 fn_CHECKPOINT = "checkpoint.hdf5"
 fn_LOGGER = "logger.log"
+fn_SEGMENTATION = "result.txt"

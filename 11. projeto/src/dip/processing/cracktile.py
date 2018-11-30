@@ -21,7 +21,7 @@ def image_preprocessor(image):
     image = np.subtract(image, mask)
     image = cv2.bitwise_not(image)
 
-    image = im.median_filter(image, 3)
+    # image = im.median_filter(image, 3)
     image = im.threshold(image, clip=3)
 
     return image
