@@ -5,12 +5,12 @@ MODEL = "unet"
 IMAGE_SIZE = (256,256,1)
 
 ### Blue, Green, Red
+BACKGROUND_COLOR = [224, 120, 110]
 SEGMENTATION_COLOR = [30, 30, 200]
-BACKGROUND_COLOR = [200, 80, 80]
 
 p_VALIDATION = 0.2
 MIN_DELTA = 1e-4
-PATIENCE = 5
+PATIENCE = 6
 ### Monitor: loss, acc, val_loss, val_acc
 MONITOR = "val_loss"
 
