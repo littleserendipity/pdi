@@ -36,7 +36,7 @@ class NeuralNetwork():
                 path_save = path.join(self.dn_test_out, number, mkdir=True)
 
                 image, _ = dip.preprocessor(image, None)
-                original_name = ("2_preprocessing_%s.png" % (number))
+                original_name = ("1_preprocessing_%s.png" % (number))
                 data.imwrite(path.join(path_save, original_name), image)
 
                 yield self.arch.prepare_input(image)
@@ -50,12 +50,12 @@ class NeuralNetwork():
             number = ("%0.3d" % (i+1))
             path_save = path.join(self.dn_test_out, number, mkdir=True)
 
-            original_name = ("1_original_%s.png" % (number))
-            data.imwrite(path.join(path_save, original_name), original[i])
-            
-            image_name = ("3_predict_%s.png" % (number))
+            image_name = ("2_predict_%s.png" % (number))
             image = dip.posprocessor(original[i], self.arch.prepare_output(image))
             data.imwrite(path.join(path_save, image_name), image)
+
+            original_name = ("3_original_%s.png" % (number))
+            data.imwrite(path.join(path_save, original_name), original[i])
 
             txt = ("Image %s was approximately %f segmented" % (number, ((image == 0).sum()/image.size)))
             open(path.join(path_save, const.fn_SEGMENTATION), 'w').write(txt)
