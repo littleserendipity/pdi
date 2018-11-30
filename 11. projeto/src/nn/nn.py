@@ -90,10 +90,11 @@ def train():
     print("Train size:\t\t%s |\tSteps_per_epoch: \t%s\nValidation size:\t%s |\tValidation_steps:\t%s\n" 
         % misc.str_center(len(images), steps_per_epoch, len(v_images), validation_steps))
 
-    loop, past_monitor, patience = 0, float('inf'), const.PATIENCE
+    patience, patience_early = const.PATIENCE, misc.round_up((epochs/2), 1)
+    loop, past_monitor = 0, float('inf')
 
     checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor=const.MONITOR, save_best_only=True, save_weights_only=True, verbose=1)
-    early_stopping = EarlyStopping(monitor=const.MONITOR, min_delta=const.MIN_DELTA, patience=int((epochs/2)-1), restore_best_weights=True, verbose=1)
+    early_stopping = EarlyStopping(monitor=const.MONITOR, min_delta=const.MIN_DELTA, patience=patience_early, restore_best_weights=True, verbose=1)
     logger = CSVLogger(nn.fn_logger, append=True)
 
     while True:
