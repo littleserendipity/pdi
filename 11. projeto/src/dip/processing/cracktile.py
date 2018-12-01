@@ -29,7 +29,7 @@ def label_preprocessor(label):
     return label
 
 def posprocessor(image):
-    # image = im.threshold(image)
+    image = im.threshold(image)
     # kernel = np.ones((3,3), np.uint8)
     # image = cv2.dilate(image, kernel, iterations=1)
     # image = im.median_filter(image, 3, iterations=1)
