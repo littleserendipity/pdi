@@ -90,7 +90,7 @@ def train():
     print("Train size:\t\t%s |\tSteps per epoch: \t%s\nValidation size:\t%s |\tValidation steps:\t%s\n" 
         % misc.str_center(len(images), steps_per_epoch, len(v_images), validation_steps))
 
-    patience, patience_early = const.PATIENCE, misc.round_up((epochs/2), 1)
+    patience, patience_early = const.PATIENCE, ((epochs//2), 1)
     loop, past_monitor = 0, float('inf')
 
     checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor=const.MONITOR, save_best_only=True, save_weights_only=True, verbose=1)

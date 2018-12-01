@@ -3,6 +3,11 @@ from util import path, generator
 from nn import nn
 import argparse
 
+### python main.py --dip=example --tolabel
+### python main.py --dataset=example --dip=example --augmentation=0000
+### python main.py --dataset=example --arch=example --dip=example --gpu --test
+### python main.py --dataset=example --arch=example --dip=example --gpu --train
+
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--tolabel", help="Preprocess images to create labels (out/tolabel)", action="store_true", default=False)
