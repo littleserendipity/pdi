@@ -19,19 +19,18 @@ def image_preprocessor(image):
     mask = cv2.dilate(mask, kernel, iterations=1)
     
     image = np.subtract(image, mask)
-    image = cv2.bitwise_not(image)
+    image = im.threshold(image, clip=5)
 
-    image = im.threshold(image, clip=3)
     return image
-    
+
 def label_preprocessor(label):
     label = cv2.cvtColor(label, cv2.COLOR_BGR2GRAY)
-    label = im.threshold(label, min_limit=254)
+    label = im.threshold(label, min_limit=127)
     return label
 
 def posprocessor(image):
-    image = im.threshold(image)
-    kernel = np.ones((3,3), np.uint8)
-    image = cv2.dilate(image, kernel, iterations=1)
-    image = im.median_filter(image, 3, iterations=1)
+    # image = im.threshold(image)
+    # kernel = np.ones((3,3), np.uint8)
+    # image = cv2.dilate(image, kernel, iterations=1)
+    # image = im.median_filter(image, 3, iterations=1)
     return image

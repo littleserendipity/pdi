@@ -9,8 +9,8 @@ def overlay(image, layer):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2BGRA)
     layer = cv2.cvtColor(layer, cv2.COLOR_BGR2BGRA)
 
-    layer[np.where((layer == [0,0,0,255]).all(axis=2))] = const.SEGMENTATION_COLOR + [255]
-    layer[np.where((layer == [255,255,255,255]).all(axis=2))] = const.BACKGROUND_COLOR + [255]
+    layer[np.where((layer == [0,0,0,255]).all(axis=2))] = const.BACKGROUND_COLOR + [255]
+    layer[np.where((layer == [255,255,255,255]).all(axis=2))] = const.SEGMENTATION_COLOR + [255]
     layer = cv2.addWeighted(image, 0.6, layer, 0.4, 0)
     return layer
 
@@ -23,7 +23,7 @@ def light(image, bright, contrast):
 
 def threshold(image, min_limit=None, max_limit=255, clip=0):
     if min_limit is None:
-        min_limit = int(np.mean(image) - clip)
+        min_limit = int(np.mean(image) + clip)
 
     _, image = cv2.threshold(image, min_limit, max_limit, cv2.THRESH_BINARY)
     return np.uint8(image)
@@ -61,7 +61,7 @@ def back_in_black(image):
     black_level = 0
 
     for x in range(6):
-        bi = threshold(image, clip=x)
+        bi = threshold(image, clip=-x)
         if (bi==0).sum() > (bi==255).sum():
             black_level += 1
 

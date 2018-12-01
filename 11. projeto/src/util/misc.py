@@ -16,15 +16,13 @@ def random_split_dataset(images, labels, percent):
     return t_images, t_labels, v_images, v_labels
 
 def shuffle(arr1, arr2):
-    new_arr1, new_arr2 = [], []
     index_shuffle = np.arange(0, len(arr1), 1)
     np.random.shuffle(index_shuffle)
 
-    for index in index_shuffle:
-        new_arr1.append(arr1[index])
-        new_arr2.append(arr2[index])
+    arr1 = np.array(arr1)[index_shuffle]
+    arr2 = np.array(arr2)[index_shuffle]
 
-    return new_arr1, new_arr2
+    return list(arr1), list(arr2)
 
 def epochs_and_steps(len_data, len_validation=None):
     if (len_validation == 0):

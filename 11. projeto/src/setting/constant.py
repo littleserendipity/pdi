@@ -12,7 +12,7 @@ p_VALIDATION = 0.2
 MIN_DELTA = 1e-5
 PATIENCE = 6
 ### Monitor: loss, acc, val_loss, val_acc
-MONITOR = "val_loss"
+MONITOR = "loss"
 
 ''' Folder '''
 # > project level

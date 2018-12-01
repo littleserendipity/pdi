@@ -13,10 +13,10 @@ class NeuralNetwork():
         self.fn_checkpoint = path.fn_checkpoint()
         self.has_checkpoint = self.fn_checkpoint if path.exist(self.fn_checkpoint) else None
 
-        self.dn_IMAGE = path.dn_train(const.dn_IMAGE)
+        self.dn_image = path.dn_train(const.dn_IMAGE)
         self.dn_aug_image = path.dn_aug(const.dn_IMAGE, mkdir=False)
 
-        self.dn_LABEL = path.dn_train(const.dn_LABEL)
+        self.dn_label = path.dn_train(const.dn_LABEL)
         self.dn_aug_label = path.dn_aug(const.dn_LABEL, mkdir=False)
 
         self.dn_test = path.dn_test()
@@ -57,8 +57,8 @@ class NeuralNetwork():
             original_name = (const.fn_ORIGINAL % (number))
             data.imwrite(path.join(path_save, original_name), original[i])
 
-            txt = ("Image %s was approximately %f segmented" % (number, ((image == 0).sum()/image.size)))
-            open(path.join(path_save, (const.fn_SEGMENTATION % (number))), 'w').write(txt)
+            # txt = ("Image %s was approximately %f segmented" % (number, ((image == 0).sum()/image.size)))
+            # open(path.join(path_save, (const.fn_SEGMENTATION % (number))), 'w').write(txt)
 
             overlay_name = (const.fn_OVERLAY % (number))
             overlay = dip.overlay(original[i], image)
@@ -66,8 +66,8 @@ class NeuralNetwork():
 
 def train():
     nn = NeuralNetwork()
-    images = data.fetch_from_path(nn.dn_IMAGE, nn.dn_aug_image)
-    labels = data.fetch_from_path(nn.dn_LABEL, nn.dn_aug_label)
+    images = data.fetch_from_path(nn.dn_image, nn.dn_aug_image)
+    labels = data.fetch_from_path(nn.dn_label, nn.dn_aug_label)
 
     total = len(images)
     q = misc.round_up(total, 100) - total
@@ -77,8 +77,8 @@ def train():
         print("Dataset augmentation (%s increase) is necessary (only once)\n" % q)
         gen.augmentation(q)
 
-        images = data.fetch_from_path(nn.dn_IMAGE, nn.dn_aug_image)
-        labels = data.fetch_from_path(nn.dn_LABEL, nn.dn_aug_label)
+        images = data.fetch_from_path(nn.dn_image, nn.dn_aug_image)
+        labels = data.fetch_from_path(nn.dn_label, nn.dn_aug_label)
     
     images, labels, v_images, v_labels = misc.random_split_dataset(images, labels, const.p_VALIDATION)
     
@@ -87,7 +87,7 @@ def train():
 
     epochs, steps_per_epoch, validation_steps = misc.epochs_and_steps(len(images), len(v_images))
 
-    print("Train size:\t\t%s |\tSteps_per_epoch: \t%s\nValidation size:\t%s |\tValidation_steps:\t%s\n" 
+    print("Train size:\t\t%s |\tSteps per epoch: \t%s\nValidation size:\t%s |\tValidation steps:\t%s\n" 
         % misc.str_center(len(images), steps_per_epoch, len(v_images), validation_steps))
 
     patience, patience_early = const.PATIENCE, misc.round_up((epochs/2), 1)
@@ -100,7 +100,6 @@ def train():
     while True:
         loop += 1
         h = nn.model.fit_generator(
-            shuffle=True,
             generator=generator,
             steps_per_epoch=steps_per_epoch,
             epochs=epochs,
