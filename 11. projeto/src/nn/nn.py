@@ -93,13 +93,14 @@ def train():
     patience, patience_early = const.PATIENCE, (epochs//2)
     loop, past_monitor = 0, float('inf')
 
-    checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor=const.MONITOR, save_best_only=True, save_weights_only=True, verbose=1)
+    checkpoint = ModelCheckpoint(nn.fn_checkpoint, monitor=const.MONITOR, save_best_only=True, verbose=1)
     early_stopping = EarlyStopping(monitor=const.MONITOR, min_delta=const.MIN_DELTA, patience=patience_early, restore_best_weights=True, verbose=1)
     logger = CSVLogger(nn.fn_logger, append=True)
 
     while True:
         loop += 1
         h = nn.model.fit_generator(
+            shuffle=True,
             generator=generator,
             steps_per_epoch=steps_per_epoch,
             epochs=epochs,
@@ -124,6 +125,7 @@ def train():
             print("Improved from %f to %f" % (past_monitor, val_monitor))
             past_monitor = val_monitor
             patience = const.PATIENCE
+            test()
         elif (patience > 0):
             print("Did not improve from %f" % (past_monitor))
             print("Current patience: %s" % (patience))

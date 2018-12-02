@@ -57,7 +57,7 @@ def equalize_light(image, limit=3, grid=(7,7), gray=False):
     return np.uint8(image)
 
 def back_in_black(image):
-    image = light(image.copy(), bright=60, contrast=60)
+    image = light(image.copy(), bright=120, contrast=60)
     black_level = 0
 
     for x in range(6):

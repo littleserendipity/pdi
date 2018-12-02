@@ -2,7 +2,7 @@ import numpy as np
 
 def random_split_dataset(images, labels, percent):
     v_images, v_labels = [], []
-    t_images, t_labels = shuffle(images, labels)
+    t_images, t_labels = list(images), list(labels)
     validation_size = round_down(percent*len(images))
 
     while (len(v_images) < validation_size):
@@ -14,15 +14,6 @@ def random_split_dataset(images, labels, percent):
     v_images, v_labels = shuffle(v_images, v_labels)
 
     return t_images, t_labels, v_images, v_labels
-
-def shuffle(arr1, arr2):
-    index_shuffle = np.arange(0, len(arr1), 1)
-    np.random.shuffle(index_shuffle)
-
-    arr1 = np.array(arr1)[index_shuffle]
-    arr2 = np.array(arr2)[index_shuffle]
-
-    return list(arr1), list(arr2)
 
 def epochs_and_steps(len_data, len_validation=None):
     if (len_validation == 0):
@@ -47,8 +38,7 @@ def middle_cdr(a, b):
     divisors_a = divisors(a)
     divisors_b = divisors(b)
     l = [(i, j) for i in divisors_a for j in divisors_b if (a//i == b//j)]
-    index = int((len(l)//2) + 1)
-    return l[index][0]
+    return l[len(l)//2][0]
 
 def divisors(n):
     divs = [1]
