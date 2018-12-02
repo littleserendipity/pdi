@@ -10,9 +10,6 @@ def random_split_dataset(images, labels, percent):
         v_images.append(t_images.pop(index))
         v_labels.append(t_labels.pop(index))
 
-    t_images, t_labels = shuffle(t_images, t_labels)
-    v_images, v_labels = shuffle(v_images, v_labels)
-
     return t_images, t_labels, v_images, v_labels
 
 def epochs_and_steps(len_data, len_validation=None):
@@ -38,7 +35,8 @@ def middle_cdr(a, b):
     divisors_a = divisors(a)
     divisors_b = divisors(b)
     l = [(i, j) for i in divisors_a for j in divisors_b if (a//i == b//j)]
-    return l[len(l)//2][0]
+    index = len(l)//2
+    return l[index if len(l) < 5 else index + 2][0]
 
 def divisors(n):
     divs = [1]

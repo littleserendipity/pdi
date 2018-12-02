@@ -21,11 +21,13 @@ def image_preprocessor(image):
     image = np.subtract(image, mask)
     image = im.threshold(image, clip=5)
 
+    # image = cv2.bitwise_not(image)
     return image
 
 def label_preprocessor(label):
     label = cv2.cvtColor(label, cv2.COLOR_BGR2GRAY)
     label = im.threshold(label, min_limit=127)
+    # label = cv2.bitwise_not(label)
     return label
 
 def posprocessor(image):

@@ -66,20 +66,17 @@ class NeuralNetwork():
 
 def train():
     nn = NeuralNetwork()
-    images = data.fetch_from_path(nn.dn_image, nn.dn_aug_image)
-    labels = data.fetch_from_path(nn.dn_label, nn.dn_aug_label)
 
-    total = len(images)
+    total = data.length_from_path(nn.dn_image, nn.dn_aug_image)
     q = misc.round_up(total, 100) - total
 
     if (q > 0):
-        del images, labels
         print("Dataset augmentation (%s increase) is necessary (only once)\n" % q)
         gen.augmentation(q)
 
-        images = data.fetch_from_path(nn.dn_image, nn.dn_aug_image)
-        labels = data.fetch_from_path(nn.dn_label, nn.dn_aug_label)
-    
+    images = data.fetch_from_path(nn.dn_image, nn.dn_aug_image)
+    labels = data.fetch_from_path(nn.dn_label, nn.dn_aug_label)
+
     images, labels, v_images, v_labels = misc.random_split_dataset(images, labels, const.p_VALIDATION)
     
     generator = nn.prepare_data(images, labels)
