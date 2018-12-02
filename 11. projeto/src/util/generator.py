@@ -18,7 +18,7 @@ def augmentation(n=1):
     label_to_dir = path.dn_aug(const.dn_LABEL)
     
     image_gen = label_gen = ImageDataGenerator(
-        rotation_range=80,
+        rotation_range=0.2,
         fill_mode="constant",
         rescale = 1./255,
         width_shift_range=0.05,

@@ -74,9 +74,7 @@ def train():
         print("Dataset augmentation (%s increase) is necessary (only once)\n" % q)
         gen.augmentation(q)
 
-    images = data.fetch_from_path(nn.dn_image, nn.dn_aug_image)
-    labels = data.fetch_from_path(nn.dn_label, nn.dn_aug_label)
-
+    images, labels = data.fetch_from_paths([nn.dn_image, nn.dn_aug_image], [nn.dn_label, nn.dn_aug_label])
     images, labels, v_images, v_labels = misc.random_split_dataset(images, labels, const.p_VALIDATION)
     
     generator = nn.prepare_data(images, labels)
@@ -122,7 +120,7 @@ def train():
             print("Improved from %f to %f" % (past_monitor, val_monitor))
             past_monitor = val_monitor
             patience = const.PATIENCE
-            test()
+            test(nn)
         elif (patience > 0):
             print("Did not improve from %f" % (past_monitor))
             print("Current patience: %s" % (patience))
@@ -131,8 +129,9 @@ def train():
             break
         print("##################\n")
 
-def test():
-    nn = NeuralNetwork(test=True)
+def test(nn=None):
+    if nn is None:
+        nn = NeuralNetwork(test=True)
 
     if (nn.has_checkpoint):
         images = data.fetch_from_path(nn.dn_test)

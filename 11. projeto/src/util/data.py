@@ -1,27 +1,36 @@
 from glob import glob
-from util import path
+from util import path, misc
 import setting.constant as const
 import numpy as np
 import cv2
+
+def fetch_from_path(images):
+    image_list = sorted(glob(path.join(images, const.FILTER)))
+    image = np.array([cv2.imread(item, 1) for item in image_list])
+    return image
+
+def fetch_from_paths(images, labels):
+    image_list, label_list = [], []
+
+    for img, lab in zip(images, labels):
+        img_fetch = sorted(glob(path.join(img, const.FILTER)))
+        lab_fetch = sorted(glob(path.join(lab, const.FILTER)))
+
+        img_fetch, lab_fetch = misc.shuffle(img_fetch, lab_fetch)
+
+        for i, l in zip(img_fetch, lab_fetch):
+            image_list.append(i)
+            label_list.append(l)
+
+    image = np.array([cv2.imread(item, 1) for item in image_list])
+    label = np.array([cv2.imread(item, 1) for item in label_list])
+    return image, label
 
 def length_from_path(file_dir, *dirs):
     length_fetch = len(glob(path.join(file_dir, const.FILTER)))
     for x in dirs:
         length_fetch += len(glob(path.join(x, const.FILTER)))
     return length_fetch
-
-def fetch_from_path(file_dir, *dirs):
-    fetch = sorted(glob(path.join(file_dir, const.FILTER)))
-    items = np.array([cv2.imread(item, 1) for item in fetch])
-    shape = items[0].shape[:2]
-
-    for x in dirs:
-        fetch = sorted(glob(path.join(x, const.FILTER)))
-        if (fetch):
-            temp = np.array([cv2.resize(cv2.imread(item, 1), dsize=shape) for item in fetch])
-            items = np.concatenate((items, temp))
-
-    return items
 
 def imshow(name, image):
     image = np.clip(image, 0, 255)
