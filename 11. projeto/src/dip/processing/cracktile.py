@@ -19,9 +19,8 @@ def image_preprocessor(image):
     mask = cv2.dilate(mask, kernel, iterations=1)
     
     image = np.subtract(image, mask)
-    image = im.threshold(image, clip=5)
 
-    return image
+    return im.threshold(image, clip=5)
 
 def label_preprocessor(label):
     label = cv2.cvtColor(label, cv2.COLOR_BGR2GRAY)
@@ -29,8 +28,15 @@ def label_preprocessor(label):
     return label
 
 def posprocessor(image):
-    image = im.threshold(image)
-    # kernel = np.ones((3,3), np.uint8)
+    # image = im.threshold(image)
+    # kernel = np.ones((5,5), np.uint8)
     # image = cv2.dilate(image, kernel, iterations=1)
-    # image = im.median_filter(image, 3, iterations=1)
-    return image
+
+    # image = im.median_filter(image, 11)
+    # image = im.median_filter(image, 7, iterations=6)
+    # image = im.median_filter(image, 5, iterations=6)
+
+    # image = cv2.erode(image, kernel, iterations=1)
+    # image = im.median_filter(image, 3, iterations=6)
+
+    return im.threshold(image)
