@@ -51,7 +51,7 @@ fn_PREPROCESSING = "%s_1_preprocessing.png"
 fn_PREDICT = "%s_2_predict.png"
 fn_ORIGINAL = "%s_3_original.png"
 fn_OVERLAY = "%s_4_overlay.png"
-fn_SEGMENTATION = "%s_5_result.txt"
+fn_SEGMENTATION = "results.txt"
 
 # > src level
 # >> model level

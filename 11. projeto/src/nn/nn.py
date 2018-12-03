@@ -11,7 +11,6 @@ class NeuralNetwork():
 
         self.fn_logger = path.fn_logger()
         self.fn_checkpoint = path.fn_checkpoint()
-        self.has_checkpoint = self.fn_checkpoint if path.exist(self.fn_checkpoint) else None
 
         self.dn_image = path.dn_train(const.dn_IMAGE)
         self.dn_aug_image = path.dn_aug(const.dn_IMAGE, mkdir=False)
@@ -23,11 +22,14 @@ class NeuralNetwork():
         self.dn_test_out = path.dn_test(out_dir=True, mkdir=False)
 
         try:
-            self.model = self.arch.model(self.has_checkpoint)
-            if (self.has_checkpoint):
+            self.model = self.arch.model(self.has_checkpoint())
+            if (self.has_checkpoint()):
                 print("Loaded: %s\n" % self.fn_checkpoint)
         except Exception as e:
             sys.exit("\nError loading: %s\n%s\n" % (self.fn_checkpoint, str(e)))
+
+    def has_checkpoint(self):
+        return self.fn_checkpoint if path.exist(self.fn_checkpoint) else None
 
     def prepare_data(self, images, labels=None):
         if (labels is None):
@@ -46,23 +48,26 @@ class NeuralNetwork():
                 yield self.arch.prepare_input(image), self.arch.prepare_input(label)
 
     def save_predict(self, original, image):
-        for (i, image) in enumerate(image):
-            number = ("%0.3d" % (i+1))
-            path_save = path.join(self.dn_test_out, mkdir=True)
+        path_save = path.join(self.dn_test_out, mkdir=True)
 
-            image_name = (const.fn_PREDICT % (number))
-            image = dip.posprocessor(original[i], self.arch.prepare_output(image))
-            data.imwrite(path.join(path_save, image_name), image)
+        with open(path.join(path_save, (const.fn_SEGMENTATION)), 'w+') as f:
+            for (i, image) in enumerate(image):
+                number = ("%0.3d" % (i+1))
+                image_name = (const.fn_PREDICT % (number))
 
-            original_name = (const.fn_ORIGINAL % (number))
-            data.imwrite(path.join(path_save, original_name), original[i])
+                image = dip.posprocessor(original[i], self.arch.prepare_output(image))
+                data.imwrite(path.join(path_save, image_name), image)
 
-            # txt = ("Image %s was approximately %f segmented" % (number, ((image == 0).sum()/image.size)))
-            # open(path.join(path_save, (const.fn_SEGMENTATION % (number))), 'w').write(txt)
+                seg = (image == 255).sum()
+                f.write(("Image %s was approximately %f segmented (%s pixels)\n" % (number, (seg/image.size), seg)))
 
-            overlay_name = (const.fn_OVERLAY % (number))
-            overlay = dip.overlay(original[i], image)
-            data.imwrite(path.join(path_save, overlay_name), overlay)
+                original_name = (const.fn_ORIGINAL % (number))
+                data.imwrite(path.join(path_save, original_name), original[i])
+
+                overlay_name = (const.fn_OVERLAY % (number))
+                overlay = dip.overlay(original[i], image)
+                data.imwrite(path.join(path_save, overlay_name), overlay)
+        f.close()
 
 def train():
     nn = NeuralNetwork()
@@ -133,7 +138,7 @@ def test(nn=None):
     if nn is None:
         nn = NeuralNetwork()
 
-    if (nn.has_checkpoint):
+    if (nn.has_checkpoint()):
         images = data.fetch_from_path(nn.dn_test)
         generator = nn.prepare_data(images)
 
