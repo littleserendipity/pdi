@@ -12,7 +12,7 @@ SEGMENTATION_COLOR = [0, 0, 255]
 
 p_VALIDATION = 0.15
 MIN_DELTA = 1e-5
-PATIENCE = 6
+PATIENCE = 2
 ### Monitor: loss, acc, val_loss, val_acc
 MONITOR = "val_loss"
 
