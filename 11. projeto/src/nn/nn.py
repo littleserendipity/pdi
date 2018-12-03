@@ -6,7 +6,7 @@ import importlib
 import sys
 
 class NeuralNetwork():
-    def __init__(self, test=False): 
+    def __init__(self): 
         self.arch = importlib.import_module("%s.%s.%s" % (const.dn_NN, const.dn_ARCH, const.MODEL))
 
         self.fn_logger = path.fn_logger()
@@ -20,7 +20,7 @@ class NeuralNetwork():
         self.dn_aug_label = path.dn_aug(const.dn_LABEL, mkdir=False)
 
         self.dn_test = path.dn_test()
-        self.dn_test_out = path.dn_test(out_dir=test, mkdir=False)
+        self.dn_test_out = path.dn_test(out_dir=True, mkdir=False)
 
         try:
             self.model = self.arch.model(self.has_checkpoint)
@@ -131,7 +131,7 @@ def train():
 
 def test(nn=None):
     if nn is None:
-        nn = NeuralNetwork(test=True)
+        nn = NeuralNetwork()
 
     if (nn.has_checkpoint):
         images = data.fetch_from_path(nn.dn_test)
