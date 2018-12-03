@@ -44,7 +44,7 @@ def middle_cdr(a, b):
     divisors_a = divisors(a)
     divisors_b = divisors(b)
     l = [(i, j) for i in divisors_a for j in divisors_b if (a//i == b//j)]
-    return l[len(l)//2][0]
+    return l[int(len(l)*0.75)][0]
 
 def divisors(n):
     divs = [1]
