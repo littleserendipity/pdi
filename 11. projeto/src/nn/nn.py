@@ -82,9 +82,6 @@ def train():
     images, labels = data.fetch_from_paths([nn.dn_image, nn.dn_aug_image], [nn.dn_label, nn.dn_aug_label])
     images, labels, v_images, v_labels = misc.random_split_dataset(images, labels, const.p_VALIDATION)
     
-    generator = nn.prepare_data(images, labels)
-    validation_data = nn.prepare_data(v_images, v_labels)
-
     epochs, steps_per_epoch, validation_steps = misc.epochs_and_steps(len(images), len(v_images))
 
     print("Train size:\t\t%s |\tSteps per epoch: \t%s\nValidation size:\t%s |\tValidation steps:\t%s\n" 
@@ -101,11 +98,11 @@ def train():
         loop += 1
         h = nn.model.fit_generator(
             shuffle=True,
-            generator=generator,
+            generator=nn.prepare_data(images, labels),
             steps_per_epoch=steps_per_epoch,
             epochs=epochs,
             validation_steps=validation_steps,
-            validation_data=validation_data,
+            validation_data=nn.prepare_data(v_images, v_labels),
             use_multiprocessing=True,
             callbacks=[checkpoint, early_stopping, logger])
 
