@@ -1,4 +1,4 @@
 # Processamento Digital de Imagens (PDI)
 
-Listas e projeto da disciplina.<br />
+Listas da disciplina de mestrado.<br />
 UPE - POLI (2018.2)
